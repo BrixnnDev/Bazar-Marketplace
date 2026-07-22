@@ -238,6 +238,26 @@ async function setupDatabase() {
 
     // notifications: rename is_read to read if exists
     `DO $$ BEGIN ALTER TABLE notifications RENAME COLUMN is_read TO read; EXCEPTION WHEN undefined_column THEN NULL; END $$;`,
+
+    // withdrawal_requests: add missing columns
+    `ALTER TABLE withdrawal_requests ADD COLUMN IF NOT EXISTS user_code VARCHAR(12);`,
+    `ALTER TABLE withdrawal_requests ADD COLUMN IF NOT EXISTS username VARCHAR(50);`,
+    `ALTER TABLE withdrawal_requests ADD COLUMN IF NOT EXISTS user_avatar VARCHAR(10) DEFAULT '👤';`,
+    `ALTER TABLE withdrawal_requests ADD COLUMN IF NOT EXISTS bank_label VARCHAR(50);`,
+    `ALTER TABLE withdrawal_requests ADD COLUMN IF NOT EXISTS owner_name VARCHAR(100);`,
+    `ALTER TABLE withdrawal_requests ADD COLUMN IF NOT EXISTS nit VARCHAR(30);`,
+    `ALTER TABLE withdrawal_requests ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'pending';`,
+    `ALTER TABLE withdrawal_requests ADD COLUMN IF NOT EXISTS processed_at TIMESTAMP;`,
+
+    // recharge_requests: ensure all columns exist
+    `ALTER TABLE recharge_requests ADD COLUMN IF NOT EXISTS user_code VARCHAR(20);`,
+    `ALTER TABLE recharge_requests ADD COLUMN IF NOT EXISTS username VARCHAR(100);`,
+    `ALTER TABLE recharge_requests ADD COLUMN IF NOT EXISTS user_avatar VARCHAR(10) DEFAULT '👤';`,
+    `ALTER TABLE recharge_requests ADD COLUMN IF NOT EXISTS type VARCHAR(20) DEFAULT 'balance';`,
+    `ALTER TABLE recharge_requests ADD COLUMN IF NOT EXISTS method VARCHAR(30) DEFAULT 'nequi';`,
+    `ALTER TABLE recharge_requests ADD COLUMN IF NOT EXISTS img_preview TEXT;`,
+    `ALTER TABLE recharge_requests ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'pending';`,
+    `ALTER TABLE recharge_requests ADD COLUMN IF NOT EXISTS processed_at TIMESTAMP;`,
   ]
 
   for (const sql of alters) {
