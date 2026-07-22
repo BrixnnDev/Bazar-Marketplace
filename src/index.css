@@ -1,0 +1,430 @@
+@import "tailwindcss";
+
+/* ===== ROOT COLORS ===== */
+:root {
+  /* Fondos */
+  --bg-primary: #0a0f0d;
+  --bg-secondary: #0f1a14;
+  --bg-card: rgba(15, 26, 20, 0.6);
+  --bg-glass: rgba(20, 40, 28, 0.45);
+
+  /* Verde */
+  --accent-primary: #00e676;
+  --accent-secondary: #00c853;
+  --accent-rgb: 0, 230, 118;
+  --accent-glow: rgba(var(--accent-rgb), 0.15);
+  --accent-border: rgba(var(--accent-rgb), 0.25);
+  --accent-bg: rgba(var(--accent-rgb), 0.12);
+
+  --green-primary: var(--accent-primary);
+  --green-secondary: var(--accent-secondary);
+  --green-dim: #1db954;
+  --green-glow: var(--accent-glow);
+  --green-border: var(--accent-border);
+
+  /* Textos */
+  --text-primary: #e8f5e9;
+  --text-secondary: #a5d6a7;
+  --text-muted: #4caf50;
+
+  /* Bordes y cristal */
+  --border-glass: rgba(0, 230, 118, 0.12);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --glass-blur: blur(16px);
+
+  /* Sombras */
+  --shadow-green: 0 0 20px rgba(0, 230, 118, 0.12);
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* ===== BASE ===== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+}
+
+/* Permite scroll en páginas fuera del dashboard */
+body, #root {
+  overflow-y: auto;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* El dashboard bloquea overflow para manejar su propio scroll */
+.dashboard-layout,
+.dashboard-layout > main {
+  overflow: hidden;
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--green-border);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--green-primary);
+}
+
+/* ===== GLASS CARD ===== */
+.glass-card {
+  background: var(--bg-glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border-glass);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+}
+
+/* ===== GLOW EFFECT ===== */
+.glow-green {
+  box-shadow: var(--shadow-green);
+}
+
+/* ===== AVATAR BUTTON — hover circular sin recuadro ===== */
+.avatar-btn {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent;
+  border-radius: 50% !important;
+  overflow: hidden;
+}
+.avatar-btn:focus,
+.avatar-btn:focus-visible {
+  outline: none !important;
+  box-shadow: none;
+}
+.avatar-btn::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+
+
+/* ===== BTN PRIMARY ===== */
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: #0a0f0d;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(0, 230, 118, 0.35);
+}
+
+/* ===== BTN GHOST ===== */
+.btn-ghost {
+  background: transparent;
+  color: var(--accent-primary);
+  border: 1px solid var(--green-border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-ghost:hover {
+  background: var(--green-glow);
+  border-color: var(--green-primary);
+}
+
+/* ===== INPUT ===== */
+.input-dark {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-glass);
+  border-radius: 10px;
+  color: var(--text-primary);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+}
+.input-dark::placeholder {
+  color: rgba(165, 214, 167, 0.4);
+}
+.input-dark:focus {
+  border-color: var(--green-primary);
+  box-shadow: 0 0 0 3px rgba(0, 230, 118, 0.1);
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade-in {
+  animation: fadeIn 0.4s ease both;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(0, 230, 118, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(0, 230, 118, 0.5);
+  }
+}
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* ===== RESPONSIVE — MOBILE FIRST ===== */
+
+/* Sidebar bottom nav en móvil */
+@media (max-width: 768px) {
+  /* El sidebar se convierte en barra inferior */
+  aside.sidebar-aside {
+    width: 100% !important;
+    height: 58px !important;
+    flex-direction: row !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    top: auto !important;
+    left: 0 !important;
+    right: 0 !important;
+    border-right: none !important;
+    border-top: 1px solid rgba(0, 230, 118, 0.12) !important;
+    z-index: 100 !important;
+    overflow: hidden !important;
+    padding: 0 4px !important;
+  }
+
+  /* Logo oculto en móvil */
+  aside.sidebar-aside .sidebar-logo {
+    display: none !important;
+  }
+
+  /* Nav horizontal */
+  aside.sidebar-aside nav {
+    flex-direction: row !important;
+    flex: 1 !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    align-items: center !important;
+    scrollbar-width: none !important;
+  }
+  aside.sidebar-aside nav::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* Items de nav en fila */
+  .sb-wrap {
+    padding: 0 2px !important;
+    flex-shrink: 0 !important;
+  }
+  .sb-wrap::after {
+    display: none !important;
+  }
+  .sb-link {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  /* Footer del sidebar oculto en móvil */
+  aside.sidebar-aside .sidebar-footer {
+    display: none !important;
+  }
+
+  /* Main content con padding inferior para la barra de nav */
+  main.dashboard-main {
+    padding-bottom: 68px !important;
+    overflow-y: auto !important;
+    height: calc(100vh - 58px) !important;
+  }
+
+  /* Dashboard layout vertical */
+  .dashboard-layout {
+    flex-direction: column !important;
+  }
+
+  /* Stats grid: 2 columnas en móvil */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Marketplace grid: 1 columna en móvil */
+  .marketplace-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Ocultar columna de actividad en home */
+  .activity-col {
+    display: none !important;
+  }
+
+  /* Grid principal del home: 1 col */
+  .home-main-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Reducir padding de glass cards */
+  .glass-card {
+    border-radius: 12px !important;
+  }
+
+  /* Textos más pequeños en mobile */
+  h1 { font-size: 18px !important; }
+  h2 { font-size: 15px !important; }
+
+  /* Botones táctiles más grandes */
+  .btn-primary, .btn-ghost {
+    min-height: 44px !important;
+    font-size: 14px !important;
+  }
+
+  /* Inputs táctiles */
+  .input-dark {
+    min-height: 44px !important;
+    font-size: 16px !important; /* Evita zoom automático en iOS */
+  }
+
+  /* Modal full screen en móvil */
+  .modal-overlay {
+    padding: 8px !important;
+    align-items: flex-end !important;
+  }
+  .modal-overlay > div {
+    border-radius: 20px 20px 0 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: 92vh !important;
+    overflow-y: auto !important;
+  }
+}
+
+/* Tablet: 769px - 1024px */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .marketplace-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .home-main-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .activity-col {
+    display: none !important;
+  }
+}
+
+/* Touch targets: todos los botones al menos 44px */
+button, a, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevenir zoom en inputs en iOS */
+@supports (-webkit-overflow-scrolling: touch) {
+  .input-dark, input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Scroll suave en móvil */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ===== TEMA CLARO — solo aplica dentro del dashboard-layout ===== */
+
+/* Variables del dashboard en modo claro */
+.dashboard-layout[data-theme="light"] {
+  --bg-primary:    #f4faf6;
+  --bg-secondary:  #eaf5ee;
+  --bg-card:       rgba(255,255,255,0.88);
+  --bg-glass:      rgba(245,255,249,0.85);
+  --text-primary:  #1a3528;
+  --text-secondary:#2e6645;
+  --text-muted:    #3d8b50;
+  --border-glass:  rgba(0,160,72,0.16);
+  --border-subtle: rgba(0,0,0,0.07);
+  --dash-bg:       #f4faf6;
+}
+
+/* Variables del dashboard en modo oscuro (default) */
+.dashboard-layout[data-theme="dark"],
+.dashboard-layout:not([data-theme]) {
+  --bg-primary:    #0a0f0d;
+  --bg-secondary:  #0f1a14;
+  --bg-card:       rgba(15,26,20,0.6);
+  --bg-glass:      rgba(20,40,28,0.45);
+  --text-primary:  #e8f5e9;
+  --text-secondary:#a5d6a7;
+  --text-muted:    #4caf50;
+  --border-glass:  rgba(0,230,118,0.12);
+  --border-subtle: rgba(255,255,255,0.06);
+  --dash-bg:       #0a0f0d;
+}
+
+/* --dash-bg fuera del dashboard = siempre oscuro */
+:root { --dash-bg: #0a0f0d; }
+
+/* Glass card en claro */
+.dashboard-layout[data-theme="light"] .glass-card {
+  background: rgba(255,255,255,0.88);
+  border-color: rgba(0,160,72,0.14);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+}
+
+/* Inputs en claro */
+.dashboard-layout[data-theme="light"] .input-dark {
+  background: rgba(255,255,255,0.95);
+  border-color: rgba(0,150,65,0.2);
+  color: #1a3528;
+}
+.dashboard-layout[data-theme="light"] .input-dark::placeholder {
+  color: rgba(46,102,69,0.4);
+}
+.dashboard-layout[data-theme="light"] .input-dark:focus {
+  border-color: var(--green-primary);
+  box-shadow: 0 0 0 3px rgba(0,180,80,0.1);
+}
+
+/* Botón ghost en claro */
+.dashboard-layout[data-theme="light"] .btn-ghost {
+  border-color: rgba(0,150,65,0.28);
+  color: var(--green-primary);
+}
+.dashboard-layout[data-theme="light"] .btn-ghost:hover {
+  background: rgba(0,150,65,0.08);
+}
+
+/* Sidebar en claro — mantiene tono verde oscuro, NO blanco */
+.dashboard-layout[data-theme="light"] aside.sidebar-aside {
+  background: #1a3528;
+  border-right-color: rgba(0,230,118,0.15);
+}
+
+/* Scrollbar en claro */
+.dashboard-layout[data-theme="light"] ::-webkit-scrollbar-track {
+  background: #eaf5ee;
+}
+.dashboard-layout[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(0,150,65,0.25);
+}

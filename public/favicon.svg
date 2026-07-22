@@ -1,0 +1,36 @@
+<svg width="64" height="64" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradiente de la B: verde arriba, negro abajo -->
+    <linearGradient id="bFade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#00e676" stop-opacity="1"/>
+      <stop offset="48%"  stop-color="#00c853" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#001a0d" stop-opacity="1"/>
+    </linearGradient>
+    <!-- Suave glow -->
+    <filter id="glow" x="-15%" y="-15%" width="130%" height="130%">
+      <feGaussianBlur stdDeviation="2" in="SourceGraphic" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fondo negro redondeado para que se vea en cualquier tema -->
+  <rect x="0" y="0" width="100" height="100" rx="22" fill="#0a0f0d"/>
+
+  <!-- Borde verde sutil -->
+  <rect x="2" y="2" width="96" height="96" rx="20"
+    fill="none" stroke="rgba(0,230,118,0.3)" stroke-width="2"/>
+
+  <!-- B grande mitad verde / mitad negra -->
+  <text
+    x="52" y="84"
+    text-anchor="middle"
+    font-size="92"
+    font-weight="900"
+    font-family="'Arial Black', 'Arial Bold', Impact, sans-serif"
+    fill="url(#bFade)"
+    filter="url(#glow)"
+  >B</text>
+</svg>
