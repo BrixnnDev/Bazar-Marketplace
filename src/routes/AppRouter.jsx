@@ -160,33 +160,85 @@ function RechargeRoute() {
   return <RechargePage />
 }
 
+/* ── Servidor desconectado — overlay global ── */
+function ServerReconnecting() {
+  return (
+    <div style={{
+      minHeight:'100vh', background:'#0a0f0d',
+      display:'flex', alignItems:'center', justifyContent:'center',
+      flexDirection:'column', gap:'20px', padding:'24px', textAlign:'center',
+    }}>
+      <style>{`
+        @keyframes pulse-conn { 0%,100%{opacity:0.5;transform:scale(1)} 50%{opacity:1;transform:scale(1.07)} }
+        @keyframes dash-move { from{stroke-dashoffset:24} to{stroke-dashoffset:0} }
+      `}</style>
+
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'6px', marginBottom:'12px' }}>
+        <div style={{ width:'52px', height:'52px', borderRadius:'14px', background:'rgba(255,167,38,0.1)', border:'1px solid rgba(255,167,38,0.35)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'24px', animation:'pulse-conn 1.6s ease-in-out infinite' }}>
+          📶
+        </div>
+        <svg width="44" height="16" style={{ flexShrink:0, marginBottom:'16px' }}>
+          <line x1="0" y1="8" x2="44" y2="8" stroke="rgba(255,167,38,0.45)" strokeWidth="2" strokeDasharray="5 3" style={{ animation:'dash-move 0.9s linear infinite' }} />
+        </svg>
+        <div style={{ width:'52px', height:'52px', borderRadius:'14px', background:'rgba(239,83,80,0.12)', border:'1px solid rgba(239,83,80,0.45)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'24px', animation:'pulse-conn 1.6s ease-in-out infinite', animationDelay:'0.4s' }}>
+          🗄️
+        </div>
+      </div>
+
+      <div>
+        <p style={{ fontSize:'20px', fontWeight:800, color:'#ffa726', margin:'0 0 6px' }}>Intentando conectar a la base de datos...</p>
+        <p style={{ fontSize:'13px', color:'rgba(165,214,167,0.45)', margin:0, lineHeight:1.7 }}>
+          El servidor está iniciando o en mantenimiento.<br/>La página se reconectará automáticamente.
+        </p>
+      </div>
+
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'8px', marginTop:'12px' }}>
+        <div style={{ width:'8px', height:'8px', borderRadius:'50%', background:'#ffa726', animation:'pulse-conn 1.5s ease-in-out infinite' }} />
+        <span style={{ fontSize:'11px', color:'rgba(165,214,167,0.4)', fontWeight:600 }}>Reintentando cada 8 segundos...</span>
+      </div>
+    </div>
+  )
+}
+
 export default function AppRouter() {
   const [maintenanceEnabled, setMaintenanceEnabled] = useState(false)
   const [maintenanceChecked, setMaintenanceChecked] = useState(false)
+  const [serverDown, setServerDown] = useState(false)
 
   const cachedUser = getUser()
   const isAdmin = cachedUser?.role === 'administrador'
 
-  // Si el usuario está en mantenimiento y no es admin, también bloquear /auth y /
-  // (para que no se quede viendo pantallas antiguas sin recargar)
+  // Check maintenance mode + server health on mount + every 8 seconds
   useEffect(() => {
     let mounted = true
-    fetch(`${API_BASE}/api/maintenance/public`)
-      .then(r => r.json())
-      .then(data => {
-        if (!mounted) return
-        setMaintenanceEnabled(!!data.enabled)
-        setMaintenanceChecked(true)
-      })
-      .catch(() => {
-        if (!mounted) return
-        setMaintenanceEnabled(false)
-        setMaintenanceChecked(true)
-      })
-    return () => { mounted = false }
+    function check() {
+      // Check maintenance mode
+      fetch(`${API_BASE}/api/maintenance/public`)
+        .then(r => r.json())
+        .then(data => {
+          if (!mounted) return
+          setMaintenanceEnabled(!!data.enabled)
+          setMaintenanceChecked(true)
+          setServerDown(false)
+        })
+        .catch(() => {
+          if (!mounted) return
+          setMaintenanceEnabled(false)
+          setMaintenanceChecked(true)
+          setServerDown(true)
+        })
+    }
+    check()
+    const interval = setInterval(check, 8000)
+    return () => { mounted = false; clearInterval(interval) }
   }, [])
 
-  // Si está en mantenimiento y NO es admin → bloquear la app (incluye /auth) hasta que se apague
+  // Si el servidor está caído — mostrar banner de reconexión
+  if (serverDown) {
+    return <ServerReconnecting />
+  }
+
+  // Si está en mantenimiento y NO es admin → bloquear la app
   if (maintenanceChecked && maintenanceEnabled && !isAdmin) {
     return <MaintenancePage />
   }

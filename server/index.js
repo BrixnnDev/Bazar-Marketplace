@@ -51,6 +51,14 @@ async function start() {
   app.listen(PORT, () => {
     console.log(`🚀 Servidor Bazar corriendo en http://localhost:${PORT}`)
   })
+
+  // Keepalive: ping DB every 5 minutes to prevent Railway from killing idle connections
+  setInterval(async () => {
+    try {
+      const pool = require('./config/db')
+      await pool.query('SELECT 1')
+    } catch { /* ignore */ }
+  }, 5 * 60 * 1000)
 }
 
 start()
