@@ -58,6 +58,10 @@ export default function AuthPage() {
     setMode('verify')
   }
 
+  function handleUpdateCode(newCode) {
+    setPending(prev => prev ? { ...prev, verifyCode: newCode } : prev)
+  }
+
   function handleLoginSuccess(userData) {
     const rawUser = userData.user || userData
     const user = normalizeUserForSession(rawUser)
@@ -228,7 +232,7 @@ export default function AuthPage() {
 
           {mode === 'login'    && <LoginForm    showPass={showPass} setShowPass={setShowPass} onForgot={() => setMode('forgot')} onSuccess={handleLoginSuccess} onNeedsVerify={handleNeedsVerify} />}
           {mode === 'register' && <RegisterForm showPass={showPass} setShowPass={setShowPass} onDone={handleRegisterDone} />}
-          {mode === 'verify'   && <VerifyForm   pending={pending} onSuccess={handleLoginSuccess} />}
+          {mode === 'verify'   && <VerifyForm   pending={pending} onSuccess={handleLoginSuccess} onUpdateCode={handleUpdateCode} />}
           {mode === 'forgot'   && <ForgotForm />}
         </div>
       </div>
@@ -404,7 +408,7 @@ function RegisterForm({ showPass, setShowPass, onDone }) {
 }
 
 /* ══════════ VERIFY — 6 dígitos ══════════ */
-function VerifyForm({ pending, onSuccess }) {
+function VerifyForm({ pending, onSuccess, onUpdateCode }) {
   const [digits, setDigits]   = useState(() => {
     if (pending?.verifyCode) return pending.verifyCode.split('')
     return ['','','','','','']
@@ -461,7 +465,10 @@ function VerifyForm({ pending, onSuccess }) {
         body: JSON.stringify({ userId: pending.userId }),
       })
       const data = await res.json()
-      if (data.verifyCode) setDigits(data.verifyCode.split(''))
+      if (data.verifyCode) {
+        setDigits(data.verifyCode.split(''))
+        onUpdateCode(data.verifyCode)
+      }
       setResent(true)
     } catch { /* silencioso */ }
   }
@@ -477,9 +484,9 @@ function VerifyForm({ pending, onSuccess }) {
       </div>
 
       {pending?.verifyCode && (
-        <div style={{ background:'rgba(255,167,38,0.1)', border:'1px solid rgba(255,167,38,0.3)', borderRadius:'10px', padding:'12px 16px', textAlign:'center' }}>
-          <p style={{ fontSize:'11px', color:'rgba(255,167,38,0.8)', margin:'0 0 4px' }}>⚠️ El correo no se pudo enviar. Tu código de verificación es:</p>
-          <p style={{ fontSize:'24px', fontWeight:900, color:'#ffa726', fontFamily:'monospace', letterSpacing:'6px', margin:0 }}>{pending.verifyCode}</p>
+        <div style={{ background:'rgba(0,230,118,0.08)', border:'1px solid rgba(0,230,118,0.25)', borderRadius:'10px', padding:'12px 16px', textAlign:'center' }}>
+          <p style={{ fontSize:'11px', color:'rgba(165,214,167,0.7)', margin:'0 0 4px' }}>Tu código de verificación:</p>
+          <p style={{ fontSize:'24px', fontWeight:900, color:'#00e676', fontFamily:'monospace', letterSpacing:'6px', margin:0 }}>{pending.verifyCode}</p>
         </div>
       )}
 
