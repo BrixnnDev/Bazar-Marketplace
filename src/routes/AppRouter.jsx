@@ -21,22 +21,6 @@ import NotFoundPage         from '../modules/errors/NotFoundPage'
 import MaintenancePage      from '../modules/errors/MaintenancePage'
 import { useUser }          from '../context/UserContext'
 
-/* ── Ocultar siempre la ruta de la URL — solo mostrar dominio ── */
-function CleanUrl() {
-  const location = useLocation()
-  useEffect(() => {
-    const path = location.pathname
-    if (path !== '/') {
-      sessionStorage.setItem('bazar_last_path', path)
-      window.history.replaceState(null, '', '/')
-    }
-  }, [location.pathname])
-  return null
-}
-
-/* ── Modo mantenimiento (persistente en backend) ── */
-
-
 /* ── Helpers ── */
 function getToken() { return localStorage.getItem('bazar_token') }
 function getUser()  {
@@ -268,7 +252,6 @@ export default function AppRouter() {
   return (
 
     <>
-      <CleanUrl />
       <SessionVerifier />
       <Routes>
         {/* ── Públicas ── */}
