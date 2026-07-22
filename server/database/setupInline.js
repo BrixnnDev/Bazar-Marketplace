@@ -236,37 +236,37 @@ async function setupDatabase() {
     await pool.query(`INSERT INTO maintenance_settings (id, enabled) VALUES (1, FALSE) ON CONFLICT (id) DO NOTHING;`)
   } catch { /* ignore */ }
 
-  // 8. Restore users (admin first, then others)
+  // 8. Delete ALL non-admin users first
   try {
-    const adminHash = await bcrypt.hash(ADMIN_PASS, 12)
-
-    // Find saved admin or create new
-    const savedAdmin = savedUsers.find(u => u.email === ADMIN_EMAIL)
-
-    if (savedAdmin) {
-      await pool.query(
-        `INSERT INTO users (code, username, email, password_hash, role, avatar, is_verified, is_active, profile_completed, balance, credits, created_at)
-         VALUES ($1,$2,$3,$4,'administrador','👑',TRUE,TRUE,TRUE,$6,$6,$7)
-         ON CONFLICT (email) DO UPDATE SET
-           password_hash=$4, role='administrador', avatar='👑', is_verified=TRUE, is_active=TRUE,
-           profile_completed=TRUE, balance=$6, credits=$6`,
-        [savedAdmin.code, savedAdmin.username, savedAdmin.email, adminHash, null, ADMIN_BALANCE, savedAdmin.created_at]
-      )
-    } else {
-      await pool.query(
-        `INSERT INTO users (code, username, email, password_hash, role, avatar, is_verified, is_active, profile_completed, balance, credits)
-         VALUES ($1,$2,$3,$4,'administrador','👑',TRUE,TRUE,TRUE,$5,$5)
-         ON CONFLICT (email) DO NOTHING`,
-        [ADMIN_CODE, 'admin', ADMIN_EMAIL, adminHash, ADMIN_BALANCE]
-      )
-    }
-
-    // Delete ALL non-admin users
     await pool.query(`DELETE FROM users WHERE email != $1`, [ADMIN_EMAIL])
     console.log('🧹 All non-admin users deleted')
+  } catch { /* ignore */ }
 
+  // 9. Create or update admin — use UPSERT for reliability
+  try {
+    const adminHash = await bcrypt.hash(ADMIN_PASS, 12)
+    const savedAdmin = savedUsers.find(u => u.email === ADMIN_EMAIL)
+    const code = savedAdmin?.code || ADMIN_CODE
+    const username = savedAdmin?.username || 'admin'
+    const createdAt = savedAdmin?.created_at || new Date()
+
+    const r = await pool.query(
+      `INSERT INTO users (code, username, email, password_hash, role, avatar, is_verified, is_active, profile_completed, balance, credits)
+       VALUES ($1,$2,$3,$4,'administrador','👑',TRUE,TRUE,TRUE,$5,$5)
+       ON CONFLICT (email) DO UPDATE SET
+         password_hash=$4, role='administrador', avatar='👑', is_verified=TRUE, is_active=TRUE,
+         profile_completed=TRUE, balance=$5, credits=$5, code=$1, username=$2
+       RETURNING id, email, role`,
+      [code, username, ADMIN_EMAIL, adminHash, ADMIN_BALANCE]
+    )
+
+    if (r.rows.length > 0) {
+      console.log(`✅ Admin ready: ${r.rows[0].email} (id=${r.rows[0].id}, role=${r.rows[0].role})`)
+    } else {
+      console.error('❌ Admin INSERT returned no rows')
+    }
   } catch (err) {
-    console.error('User restore error:', err.message)
+    console.error('❌ Admin creation FAILED:', err.message)
   }
 
   console.log('✅ Database ready — all tables recreated with correct schemas')
