@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer')
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
+const RESEND_API_KEY = process.env.RESEND_API_KEY || 're_6Lk1sJH2_KmxDkyCmicfY9kgsA9TPmKrc'
 const SMTP_USER = process.env.SMTP_USER || 'bxzaradmin@gmail.com'
 const SMTP_PASS = process.env.SMTP_PASS || 'ajsqcvvubgjjyfyr'
 
@@ -8,9 +8,13 @@ let resend = null
 let smtpTransporter = null
 
 if (RESEND_API_KEY) {
-  const { Resend } = require('resend')
-  resend = new Resend(RESEND_API_KEY)
-  console.log('✅ Resend listo')
+  if (RESEND_API_KEY.startsWith('re_')) {
+    const { Resend } = require('resend')
+    resend = new Resend(RESEND_API_KEY)
+    console.log('✅ Resend listo')
+  } else {
+    console.log('⚠️ RESEND_API_KEY no válido (no comienza con re_)')
+  }
 }
 
 smtpTransporter = nodemailer.createTransport({
@@ -60,7 +64,7 @@ function verificationHtml(username, code) {
 }
 
 async function sendEmailWithResend(toEmail, subject, html) {
-  if (!resend) throw new Error('RESEND_API_KEY no configurada')
+  if (!resend) throw new Error('Resend no configurado')
   const { data, error } = await resend.emails.send({
     from: `Bazar <onboarding@resend.dev>`,
     to:   [toEmail],
@@ -84,23 +88,15 @@ async function sendEmailWithSMTP(toEmail, subject, html) {
 }
 
 async function sendEmail(toEmail, subject, html) {
-  const attempts = []
-
   if (resend) {
     try {
       return await sendEmailWithResend(toEmail, subject, html)
     } catch (err) {
-      attempts.push('Resend: ' + err.message)
+      console.log('⚠️ Resend falló, usando Gmail:', err.message)
     }
   }
 
-  try {
-    return await sendEmailWithSMTP(toEmail, subject, html)
-  } catch (err) {
-    attempts.push('SMTP: ' + err.message)
-  }
-
-  throw new Error('Email falló: ' + attempts.join('; '))
+  return await sendEmailWithSMTP(toEmail, subject, html)
 }
 
 async function sendVerificationEmail(toEmail, username, code) {
