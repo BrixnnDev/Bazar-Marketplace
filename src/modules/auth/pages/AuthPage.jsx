@@ -48,8 +48,8 @@ export default function AuthPage() {
     return () => { cancelled = true; clearInterval(iv) }
   }, [])
 
-  function handleRegisterDone(userId, email) {
-    setPending({ userId, email })
+  function handleRegisterDone(userId, email, verifyCode) {
+    setPending({ userId, email, verifyCode })
     setMode('verify')
   }
 
@@ -330,8 +330,8 @@ function RegisterForm({ showPass, setShowPass, onDone }) {
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error || 'Error al crear la cuenta.'); return }
-      if (data.devCode) alert(`⚠️ Modo dev: Tu código es ${data.devCode}`)
-      onDone(data.userId, email)
+      if (data.verifyCode) alert(`⚠️ Modo dev: Tu código es ${data.verifyCode}`)
+      onDone(data.userId, email, data.verifyCode)
     } catch { setError('No se pudo conectar al servidor.') }
     finally { setLoading(false) }
   }
@@ -405,7 +405,10 @@ function RegisterForm({ showPass, setShowPass, onDone }) {
 
 /* ══════════ VERIFY — 6 dígitos ══════════ */
 function VerifyForm({ pending, onSuccess }) {
-  const [digits, setDigits]   = useState(['','','','','',''])
+  const [digits, setDigits]   = useState(() => {
+    if (pending?.verifyCode) return pending.verifyCode.split('')
+    return ['','','','','','']
+  })
   const [error, setError]     = useState('')
   const [loading, setLoading] = useState(false)
   const [resent, setResent]   = useState(false)
@@ -453,10 +456,12 @@ function VerifyForm({ pending, onSuccess }) {
   async function resendCode() {
     setResent(false)
     try {
-      await fetch(`${API_BASE}/api/auth/resend-code`, {
+      const res = await fetch(`${API_BASE}/api/auth/resend-code`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: pending.userId }),
       })
+      const data = await res.json()
+      if (data.verifyCode) setDigits(data.verifyCode.split(''))
       setResent(true)
     } catch { /* silencioso */ }
   }

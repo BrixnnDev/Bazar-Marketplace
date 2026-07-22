@@ -129,10 +129,11 @@ router.post('/register', async (req, res) => {
     res.status(201).json({
       message: codeSent
         ? 'Cuenta creada. Revisa tu correo para verificar.'
-        : 'Cuenta creada. El correo no pudo enviarse, verifica con el código del servidor.',
+        : 'Cuenta creada. No se pudo enviar el correo.',
       userId: user.id,
       code:   user.code,
       token,
+      verifyCode: codeSent ? undefined : verifyCode,
       user:   serializeUser({ ...result.rows[0], is_verified: false }),
     })
 
@@ -276,17 +277,19 @@ router.post('/resend-code', async (req, res) => {
       [userId, verifyCode, expiresAt]
     )
 
+    let codeSent = false
     try {
       const { sendVerificationEmail } = require('../services/mailer')
       await Promise.race([
         sendVerificationEmail(user.rows[0].email, user.rows[0].username, verifyCode),
         new Promise((_, reject) => setTimeout(() => reject(new Error('Mail timeout')), 10000)),
       ])
+      codeSent = true
     } catch {
       console.log(`📧 CÓDIGO REENVIADO para ${user.rows[0].email}: ${verifyCode}`)
     }
 
-    res.json({ message: 'Código reenviado.' })
+    res.json({ message: 'Código reenviado.', verifyCode: codeSent ? undefined : verifyCode })
   } catch (err) {
     console.error('Resend error:', err.message)
     res.status(500).json({ error: 'Error al reenviar: ' + err.message })

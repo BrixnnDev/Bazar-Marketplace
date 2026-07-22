@@ -10,7 +10,7 @@ function auth(req, res, next) {
   const header = req.headers.authorization
   if (!header) return res.status(401).json({ error: 'Sin token.' })
   try { req.user = jwt.verify(header.split(' ')[1], JWT_SECRET); next() }
-  catch { res.status(401).json({ error: 'Token inválido.' }) }
+  catch { res.status(401).json({ error: 'Token invalido.' }) }
 }
 
 function adminOnly(req, res, next) {
@@ -19,7 +19,7 @@ function adminOnly(req, res, next) {
   next()
 }
 
-/* ── GET /api/admin/user-by-code/:code ── */
+/* GET /api/admin/user-by-code/:code */
 router.get('/user-by-code/:code', auth, adminOnly, async (req, res) => {
   try {
     const r = await pool.query(
@@ -28,12 +28,12 @@ router.get('/user-by-code/:code', auth, adminOnly, async (req, res) => {
       [req.params.code]
     )
     if (r.rows.length === 0)
-      return res.status(404).json({ error: 'No existe una cuenta con ese código.' })
+      return res.status(404).json({ error: 'No existe una cuenta con ese codigo.' })
     const u = r.rows[0]
     res.json({ user: {
       id: u.id, code: u.code, username: u.username,
       name: u.full_name || u.username,
-      avatar: u.avatar || '👤',
+      avatar: u.avatar || 'user',
       balance: Number(u.balance || 0),
       credits: Number(u.credits || 0),
       is_active: u.is_active,
@@ -43,7 +43,7 @@ router.get('/user-by-code/:code', auth, adminOnly, async (req, res) => {
   }
 })
 
-/* ── GET /api/admin/users — todos los usuarios incluido admin ── */
+/* GET /api/admin/users - todos los usuarios incluido admin */
 router.get('/users', auth, adminOnly, async (req, res) => {
   try {
     const result = await pool.query(
@@ -67,7 +67,7 @@ router.get('/users', auth, adminOnly, async (req, res) => {
         joined:    u.created_at
           ? new Date(u.created_at).toLocaleDateString('es-ES', { month:'short', day:'numeric', year:'numeric' })
           : '',
-        avatar:    u.avatar || (isAdmin ? '👑' : '👤'),
+        avatar:    u.avatar || (isAdmin ? 'admin' : 'user'),
         balance:   isAdmin ? ADMIN_WALLET : Number(u.balance || 0),
         credits:   isAdmin ? ADMIN_WALLET : Number(u.credits || 0),
         nequi:     u.phone || '',
@@ -82,14 +82,14 @@ router.get('/users', auth, adminOnly, async (req, res) => {
   }
 })
 
-/* ── POST /api/admin/recharge ── */
+/* POST /api/admin/recharge */
 router.post('/recharge', auth, adminOnly, async (req, res) => {
   try {
     const { code, type, amount, note } = req.body
     if (!code || !type || !amount || Number(amount) <= 0)
       return res.status(400).json({ error: 'Datos incompletos.' })
     if (!['balance', 'credits'].includes(type))
-      return res.status(400).json({ error: 'Tipo inválido.' })
+      return res.status(400).json({ error: 'Tipo invalido.' })
 
     const col = type === 'balance' ? 'balance' : 'credits'
     await pool.query('BEGIN')
@@ -118,11 +118,11 @@ router.post('/recharge', auth, adminOnly, async (req, res) => {
   }
 })
 
-/* ── POST /api/admin/set-balance — establece saldo y créditos exactos ── */
+/* POST /api/admin/set-balance - establece saldo y creditos exactos */
 router.post('/set-balance', auth, adminOnly, async (req, res) => {
   try {
     const { code, balance, credits } = req.body
-    if (!code) return res.status(400).json({ error: 'Falta el código.' })
+    if (!code) return res.status(400).json({ error: 'Falta el codigo.' })
 
     const r = await pool.query(
       `UPDATE users SET balance=$1, credits=$2 WHERE UPPER(code)=UPPER($3)
@@ -136,7 +136,7 @@ router.post('/set-balance', auth, adminOnly, async (req, res) => {
   }
 })
 
-/* ── PATCH /api/admin/users/:id — actualiza rol, estado, nequi ── */
+/* PATCH /api/admin/users/:id - actualiza rol, estado, nequi */
 router.patch('/users/:id', auth, adminOnly, async (req, res) => {
   try {
     const { role, status, nequi } = req.body
@@ -164,13 +164,13 @@ router.patch('/users/:id', auth, adminOnly, async (req, res) => {
   }
 })
 
-/* ── POST /api/admin/deduct ── */
+/* POST /api/admin/deduct */
 router.post('/deduct', auth, adminOnly, async (req, res) => {
   try {
     const { code, type } = req.body
     if (!code || !type) return res.status(400).json({ error: 'Datos incompletos.' })
     if (!['balance', 'credits', 'all'].includes(type))
-      return res.status(400).json({ error: 'Tipo inválido.' })
+      return res.status(400).json({ error: 'Tipo invalido.' })
 
     let q
     if      (type === 'balance') q = `UPDATE users SET balance=0 WHERE UPPER(code)=UPPER($1) RETURNING id,code,username,balance,credits`
@@ -179,13 +179,13 @@ router.post('/deduct', auth, adminOnly, async (req, res) => {
 
     const r = await pool.query(q, [code])
     if (r.rows.length === 0) return res.status(404).json({ error: 'Cuenta no encontrada.' })
-    res.json({ message: 'Operación completada.', user: r.rows[0] })
+    res.json({ message: 'Operacion completada.', user: r.rows[0] })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
 })
 
-/* ── PATCH /api/admin/users/:id/verify — verificar un usuario ── */
+/* PATCH /api/admin/users/:id/verify - verificar un usuario */
 router.patch('/users/:id/verify', auth, adminOnly, async (req, res) => {
   try {
     const r = await pool.query(
@@ -199,8 +199,8 @@ router.patch('/users/:id/verify', auth, adminOnly, async (req, res) => {
   }
 })
 
-/* ── DELETE /api/admin/users/:id ──
-   Eliminar un usuario (no admin) ── */
+/* DELETE /api/admin/users/:id
+   Eliminar un usuario (no admin) */
 router.delete('/users/:id', auth, adminOnly, async (req, res) => {
   try {
     const uid = Number(req.params.id)
@@ -215,9 +215,9 @@ router.delete('/users/:id', auth, adminOnly, async (req, res) => {
   }
 })
 
-/* ── POST /api/admin/reset-database ──
+/* POST /api/admin/reset-database
    Elimina TODOS los usuarios, productos, compras, etc.
-   Solo deja el admin. ⚠️ IRREVERSIBLE */
+   Solo deja el admin. IRREVERSIBLE */
 router.post('/reset-database', auth, adminOnly, async (req, res) => {
   try {
     const setupDatabase = require('../database/setupInline')
