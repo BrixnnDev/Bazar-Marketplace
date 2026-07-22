@@ -110,7 +110,7 @@ router.post('/register', async (req, res) => {
       [user.id, verifyCode, expiresAt]
     )
 
-    /* Intentar enviar correo — si falla, auto-verificar (producción sin SMTP) */
+    /* Intentar enviar correo de verificación */
     let codeSent = false
     try {
       const { sendVerificationEmail } = require('../services/mailer')
@@ -122,26 +122,18 @@ router.post('/register', async (req, res) => {
     } catch (mailErr) {
       console.warn('⚠️  Correo no enviado:', mailErr.message)
       console.log(`📧 CÓDIGO VERIFICACIÓN [${email}]: ${verifyCode}`)
-      // Auto-verificar si el correo no se puede enviar
-      await pool.query('UPDATE users SET is_verified=true WHERE id=$1', [user.id])
     }
 
     const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' })
-    const updatedUser = await pool.query(
-      `SELECT id, code, username, email, role, avatar, balance, credits,
-              profile_completed, full_name, doc_type, doc_number, phone,
-              city, is_verified, is_active, created_at
-       FROM users WHERE id=$1`, [user.id]
-    )
 
     res.status(201).json({
       message: codeSent
         ? 'Cuenta creada. Revisa tu correo para verificar.'
-        : 'Cuenta creada y verificada automáticamente.',
+        : 'Cuenta creada. El correo no pudo enviarse, verifica con el código del servidor.',
       userId: user.id,
       code:   user.code,
       token,
-      user:   serializeUser(updatedUser.rows[0]),
+      user:   serializeUser({ ...result.rows[0], is_verified: false }),
     })
 
   } catch (err) {

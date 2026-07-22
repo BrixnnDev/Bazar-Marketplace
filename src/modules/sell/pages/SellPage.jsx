@@ -41,7 +41,7 @@ export default function SellPage() {
   const [returnId,  setReturnId]  = useState(null)
   const [returning, setReturning] = useState(false)
 
-  useEffect(() => { loadPurchases() }, [])
+  useEffect(() => { loadPurchases(); const iv = setInterval(loadPurchases, 8000); return () => clearInterval(iv) }, [])
 
   async function loadPurchases() {
     const token = getToken()

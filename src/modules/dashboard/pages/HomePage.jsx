@@ -62,8 +62,20 @@ export default function HomePage() {
       // eslint-disable-next-line no-empty
       } catch {}
     }
-    loadStats(); loadActivity()
-    const iv = setInterval(() => { loadStats(); loadActivity() }, 10000)
+    async function refreshUser() {
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (res.ok) {
+          const d = await res.json()
+          if (d.user) { updateUser(d.user); localStorage.setItem('bazar_user', JSON.stringify(d.user)) }
+        }
+      // eslint-disable-next-line no-empty
+      } catch {}
+    }
+    loadStats(); loadActivity(); refreshUser()
+    const iv = setInterval(() => { loadStats(); loadActivity(); refreshUser() }, 10000)
     return () => clearInterval(iv)
   }, [])
 

@@ -98,8 +98,8 @@ router.post('/', auth, async (req, res) => {
     if (sellerUser) {
       await client.query(
         `UPDATE purchases SET status='vendido', for_sale=false
-         WHERE buyer_id=$1 AND product_id=$2 AND status='en_venta'`,
-        [sellerUser.id, productId]
+         WHERE buyer_id=$1 AND product_name=$2 AND status='en_venta'`,
+        [sellerUser.id, product.name]
       )
 
       /* 9. Notificación de venta para el vendedor */
@@ -177,18 +177,7 @@ router.get('/stats', auth, async (req, res) => {
       `SELECT COUNT(*) AS total_ventas,
               COALESCE(SUM(sale_price - price), 0) AS ganancia_bruta
        FROM purchases
-       WHERE buyer_id=$1 AND status='vendido' AND sale_price IS NOT NULL AND sale_price > price`,
-      [req.user.id]
-    )
-
-    // También ganancias por ventas en products — cuando alguien compra un producto que publicó el usuario
-    // Ya se acredita en balance, aquí solo calculamos la diferencia
-    const profitR = await pool.query(
-      `SELECT COALESCE(SUM(p.price - pu.price), 0) AS ganancia_reventa
-       FROM products p
-       JOIN purchases pu ON pu.product_id = p.id
-       WHERE p.seller_id = (SELECT code FROM users WHERE id=$1)
-         AND pu.buyer_id != $1`,
+       WHERE buyer_id=$1 AND status='vendido' AND sale_price IS NOT NULL`,
       [req.user.id]
     )
 
@@ -196,7 +185,7 @@ router.get('/stats', auth, async (req, res) => {
       totalCompras:    Number(buyR.rows[0].total_compras),
       totalGastado:    Number(buyR.rows[0].total_gastado),
       totalVentas:     Number(sellR.rows[0].total_ventas),
-      gananciaReventa: Math.max(0, Number(profitR.rows[0].ganancia_reventa || 0)),
+      gananciaReventa: Math.max(0, Number(sellR.rows[0].ganancia_bruta || 0)),
     })
   } catch (err) {
     console.error('GET /purchases/stats error:', err.message)

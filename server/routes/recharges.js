@@ -106,6 +106,12 @@ router.patch('/:id/approve', auth, adminOnly, async (req, res) => {
       `UPDATE users SET ${col} = ${col} + $1 WHERE id = $2`,
       [Number(request.amount), request.user_id]
     )
+
+    // Descontar del saldo del admin (su dinero financia la plataforma)
+    await client.query(
+      `UPDATE users SET balance = balance - $1 WHERE id = $2 AND role = 'administrador'`,
+      [Number(request.amount), req.user.id]
+    )
     await client.query(
       `UPDATE recharge_requests SET status='approved', processed_at=NOW() WHERE id=$1`,
       [req.params.id]

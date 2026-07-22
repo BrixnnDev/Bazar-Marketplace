@@ -71,10 +71,17 @@ async function sendVerificationEmail(toEmail, username, code) {
   `
 
   await transporter.sendMail({
-    from:    '"Bazar" <bxzaradmin@gmail.com>',
+    from:    '"Bazar Marketplace" <bxzaradmin@gmail.com>',
     to:      toEmail,
     subject: '🔐 Código de verificación — Bazar',
     html,
+    headers: {
+      'List-Unsubscribe': `<mailto:bxzaradmin@gmail.com?subject=unsubscribe>`,
+      'X-Mailer': 'Bazar-Marketplace',
+      'Precedence': 'bulk',
+      'X-Auto-Response-Suppress': 'All',
+    },
+    replyTo: 'bxzaradmin@gmail.com',
   })
 }
 
@@ -125,9 +132,16 @@ async function sendPasswordResetEmail(toEmail, username, code) {
   </html>
   `
   await transporter.sendMail({
-    from:    '"Bazar" <bxzaradmin@gmail.com>',
+    from:    '"Bazar Marketplace" <bxzaradmin@gmail.com>',
     to:      toEmail,
     subject: '🔑 Restablecer contraseña — Bazar',
     html,
+    headers: {
+      'List-Unsubscribe': `<mailto:bxzaradmin@gmail.com?subject=unsubscribe>`,
+      'X-Mailer': 'Bazar-Marketplace',
+      'Precedence': 'bulk',
+      'X-Auto-Response-Suppress': 'All',
+    },
+    replyTo: 'bxzaradmin@gmail.com',
   })
 }
