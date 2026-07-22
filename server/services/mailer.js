@@ -1,6 +1,6 @@
 const { Resend } = require('resend')
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
+const RESEND_API_KEY = process.env.RESEND_API_KEY || 're_YSs3wQAj_9bepLTYhghb9QQrWnayAZ6Rv'
 const FROM_EMAIL = process.env.SMTP_USER || 'bxzaradmin@gmail.com'
 
 let resend = null
