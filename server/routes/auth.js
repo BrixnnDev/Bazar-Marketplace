@@ -373,12 +373,40 @@ router.get('/sessions', async (req, res) => {
 /* ── Test de correo (solo para debugging) ── */
 router.get('/test-email', async (req, res) => {
   try {
-    const { sendVerificationEmail } = require('../services/mailer')
-    await sendVerificationEmail(req.query.to || 'test@test.com', 'TestUser', '123456')
-    res.json({ ok: true, message: 'Correo enviado. Revisa tu bandeja.' })
+    const to = req.query.to
+    if (!to) return res.status(400).json({ ok: false, error: 'Falta ?to=correo@gmail.com' })
+
+    const nodemailer = require('nodemailer')
+    const SMTP_USER = process.env.SMTP_USER || 'bxzaradmin@gmail.com'
+    const SMTP_PASS = process.env.SMTP_PASS || 'lfwupqlwlbhmwfwz'
+
+    const testTransporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user: SMTP_USER, pass: SMTP_PASS },
+      tls: { rejectUnauthorized: false },
+      connectionTimeout: 30000,
+      socketTimeout: 30000,
+    })
+
+    const verify = await testTransporter.verify()
+      .then(() => ({ ok: true }))
+      .catch(err => ({ ok: false, error: err.message, code: err.code }))
+
+    if (!verify.ok) {
+      return res.status(500).json({ ok: false, step: 'verify', error: verify.error, code: verify.code, smtp_user: SMTP_USER })
+    }
+
+    const info = await testTransporter.sendMail({
+      from: SMTP_USER,
+      to,
+      subject: 'Test Bazar',
+      html: '<h1 style="color:green">Bazar funciona!</h1><p>Si ves este correo, el SMTP esta bien.</p>',
+    })
+
+    res.json({ ok: true, messageId: info.messageId, smtp_user: SMTP_USER })
   } catch (err) {
     console.error('Test email error:', err)
-    res.status(500).json({ ok: false, error: err.message })
+    res.status(500).json({ ok: false, error: err.message, code: err.code, stack: err.stack })
   }
 })
 
