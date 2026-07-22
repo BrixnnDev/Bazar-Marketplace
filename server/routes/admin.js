@@ -199,4 +199,18 @@ router.patch('/users/:id/verify', auth, adminOnly, async (req, res) => {
   }
 })
 
+/* ── POST /api/admin/reset-database ──
+   Elimina TODOS los usuarios, productos, compras, etc.
+   Solo deja el admin. ⚠️ IRREVERSIBLE */
+router.post('/reset-database', auth, adminOnly, async (req, res) => {
+  try {
+    const setupDatabase = require('../database/setupInline')
+    await setupDatabase()
+    res.json({ message: 'Base de datos reiniciada. Solo queda el admin.' })
+  } catch (err) {
+    console.error('Reset DB error:', err.message)
+    res.status(500).json({ error: err.message })
+  }
+})
+
 module.exports = router
