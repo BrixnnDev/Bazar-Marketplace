@@ -7,7 +7,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 
 const SupportContext = createContext(null)
 
-const API = 'http://localhost:3001'
+import API from '../config/api'
 
 export function SupportProvider({ children }) {
   const [unreadCount, setUnreadCount] = useState(0)

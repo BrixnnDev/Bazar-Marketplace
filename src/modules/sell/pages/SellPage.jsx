@@ -6,7 +6,7 @@ import {
   MdDescription, MdAttachMoney, MdUndo,
 } from 'react-icons/md'
 
-const API = 'http://localhost:3001'
+import API from '../../../config/api'
 function getToken() { return localStorage.getItem('bazar_token') }
 
 const CATS = [

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { MdSend, MdSupportAgent, MdCircle } from 'react-icons/md'
 import { useUser } from '../../../context/UserContext'
 
-const API = 'http://localhost:3001'
+import API from '../../../config/api'
 function getToken() { return localStorage.getItem('bazar_token') }
 
 const FAQS = [

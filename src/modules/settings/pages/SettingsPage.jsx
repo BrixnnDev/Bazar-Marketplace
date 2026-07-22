@@ -1,3 +1,4 @@
+import API_BASE from '../../../config/api'
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { getStoredAccent, saveAccent, getStoredMode, saveMode } from '../../../utils/themeStorage'
@@ -234,7 +235,7 @@ function TabPerfil({ onSave }) {
     setSaving(true)
     try {
       const token = localStorage.getItem('bazar_token')
-      const res   = await fetch('http://localhost:3001/api/profile/update', {
+      const res   = await fetch(`${API_BASE}/api/profile/update`, {
         method:  'PUT',
         headers: { 'Content-Type':'application/json', Authorization:`Bearer ${token}` },
 body: JSON.stringify({
@@ -509,7 +510,7 @@ function TabSesiones() {
     if (!token) { setLoading(false); return } // eslint-disable-line react-hooks/set-state-in-effect
 
     /* Intentar obtener la IP real del backend */
-    fetch('http://localhost:3001/api/auth/sessions', {
+    fetch(`${API_BASE}/api/auth/sessions`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(r => r.ok ? r.json() : null)

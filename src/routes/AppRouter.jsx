@@ -1,3 +1,4 @@
+import API_BASE from '../config/api'
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import LandingPage          from '../modules/landing/pages/LandingPage'
@@ -50,7 +51,7 @@ function SessionVerifier() {
       setChecked(true); return
     }
 
-    fetch('http://localhost:3001/api/auth/me', {
+    fetch(`${API_BASE}/api/auth/me`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(r => r.json())
@@ -170,7 +171,7 @@ export default function AppRouter() {
   // (para que no se quede viendo pantallas antiguas sin recargar)
   useEffect(() => {
     let mounted = true
-    fetch('http://localhost:3001/api/maintenance/public')
+    fetch(`${API_BASE}/api/maintenance/public`)
       .then(r => r.json())
       .then(data => {
         if (!mounted) return

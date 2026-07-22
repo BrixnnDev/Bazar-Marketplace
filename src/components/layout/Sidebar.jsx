@@ -1,3 +1,4 @@
+import API_BASE from '../../config/api'
 import { useState, useEffect } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
@@ -84,7 +85,7 @@ export default function Sidebar() {
       const token = localStorage.getItem('bazar_token')
       if (!token) return
       try {
-        const res  = await fetch('http://localhost:3001/api/notifications', {
+        const res  = await fetch(`${API_BASE}/api/notifications`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (!res.ok) return
@@ -112,7 +113,7 @@ export default function Sidebar() {
       const token = localStorage.getItem('bazar_token')
       if (!token) return
       try {
-        const res  = await fetch('http://localhost:3001/api/recharges', {
+        const res  = await fetch(`${API_BASE}/api/recharges`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (!res.ok) return

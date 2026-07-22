@@ -1,3 +1,4 @@
+import API_BASE from '../../../config/api'
 import { useEffect, useState } from 'react'
 import { useNavigate }                  from 'react-router-dom'
 import { useUser } from '../../../context/UserContext'
@@ -336,7 +337,7 @@ function BuyModal({ product, onClose, onPurchaseSuccess }) {
     setErrorMsg('')
     try {
       const token = localStorage.getItem('bazar_token')
-      const res   = await fetch('http://localhost:3001/api/purchases', {
+      const res   = await fetch(`${API_BASE}/api/purchases`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body:    JSON.stringify({ productId: product.id }),

@@ -1,3 +1,4 @@
+import API_BASE from '../config/api'
 /**
  * Contexto del usuario actual.
  * Settings lo actualiza — Dashboard y ProfileModal lo leen.
@@ -68,7 +69,7 @@ export function UserProvider({ children }) {
         const token = getToken()
         if (!token) return
         try {
-          const res  = await fetch('http://localhost:3001/api/auth/me', {
+          const res  = await fetch(`${API_BASE}/api/auth/me`, {
             headers: { Authorization: `Bearer ${token}` },
           })
           if (!res.ok) return

@@ -1,4 +1,4 @@
-const API = 'http://localhost:3001'
+import API from '../config/api'
 export const PRODUCT_STORAGE_KEY = 'bazar_products'
 
 export const CATEGORY_LABELS = {

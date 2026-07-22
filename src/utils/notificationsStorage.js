@@ -1,3 +1,4 @@
+import API_BASE from '../config/api'
 export function buildSystemNotification({ title, body, details = '' }) {
   return {
     id: `notif-${Date.now()}`,
@@ -15,7 +16,7 @@ export async function addNotification({ title, body, details = '', type = 'siste
   if (!token) return null
 
   try {
-    const res = await fetch('http://localhost:3001/api/notifications', {
+    const res = await fetch(`${API_BASE}/api/notifications`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ title, body, details, type, role }),

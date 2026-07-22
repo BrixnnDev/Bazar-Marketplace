@@ -6,7 +6,7 @@ import {
   MdAddCard, MdHistory, MdClose,
 } from 'react-icons/md'
 
-const API = 'http://localhost:3001'
+import API from '../../../config/api'
 
 const TYPES = {
   recarga: { label: 'Recarga', icon: MdAddCard,      color: '#69f0ae', bg: 'rgba(105,240,174,0.1)' },

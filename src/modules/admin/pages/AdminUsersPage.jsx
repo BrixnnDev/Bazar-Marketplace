@@ -1,3 +1,4 @@
+import API_BASE from '../../../config/api'
 import { useEffect, useState } from 'react'
 import {
   MdSearch,
@@ -31,7 +32,7 @@ const STATUS_CFG = {
 const FILTER_ROLES    = ['Todos', 'Usuario', 'Vendedor', 'Comprador', 'Administrador']
 const FILTER_STATUSES = ['Todos', 'Activo', 'Suspendido', 'Pendiente']
 
-const API_ADMIN_USERS = 'http://localhost:3001/api/admin/users'
+const API_ADMIN_USERS = `${API_BASE}/api/admin/users`
 
 export default function AdminUsersPage() {
   const [users, setUsers]         = useState([])
@@ -71,7 +72,7 @@ export default function AdminUsersPage() {
     const token = localStorage.getItem('bazar_token')
     try {
       // 1. Cambiar rol y estado si aplica
-      await fetch(`http://localhost:3001/api/admin/users/${editUser.id}`, {
+      await fetch(`${API_BASE}/api/admin/users/${editUser.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -82,7 +83,7 @@ export default function AdminUsersPage() {
       })
 
       // 2. Ajustar saldo directamente
-      await fetch(`http://localhost:3001/api/admin/set-balance`, {
+      await fetch(`${API_BASE}/api/admin/set-balance`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -106,7 +107,7 @@ export default function AdminUsersPage() {
     const token = localStorage.getItem('bazar_token')
     const u = users.find(x => x.id === id)
     const newStatus = u.status === 'activo' ? false : true
-    fetch(`http://localhost:3001/api/admin/users/${id}`, {
+    fetch(`${API_BASE}/api/admin/users/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ status: newStatus ? 'activo' : 'suspendido' }),

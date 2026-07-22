@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useUser } from '../../../context/UserContext'
+import API_BASE from '../../../config/api'
 import {
   MdPerson, MdBadge, MdPhone, MdCheckCircle, MdWarning,
 } from 'react-icons/md'
 
-const API = 'http://localhost:3001/api'
+const API = `${API_BASE}/api`
 
 /* Avatares disponibles — SIN corona (👑 es solo admin) */
 const AVATARS = [

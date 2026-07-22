@@ -1,3 +1,4 @@
+import API_BASE from '../../../config/api'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
@@ -81,7 +82,7 @@ function HomeView({ onSelect }) {
       const token = localStorage.getItem('bazar_token')
       if (!token) return
       try {
-        const res  = await fetch('http://localhost:3001/api/recharges', {
+        const res  = await fetch(`${API_BASE}/api/recharges`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (!res.ok) return
@@ -90,7 +91,7 @@ function HomeView({ onSelect }) {
       // eslint-disable-next-line no-empty
       } catch {}
       try {
-        const res  = await fetch('http://localhost:3001/api/withdrawals', {
+        const res  = await fetch(`${API_BASE}/api/withdrawals`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (!res.ok) return
@@ -205,7 +206,7 @@ function RequestsView() {
     const token = localStorage.getItem('bazar_token')
     if (!token) return
     try {
-      const res  = await fetch('http://localhost:3001/api/recharges', {
+      const res  = await fetch(`${API_BASE}/api/recharges`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       if (!res.ok) return
@@ -231,7 +232,7 @@ function RequestsView() {
     setLoading(true)
     const token = localStorage.getItem('bazar_token')
     try {
-      const res  = await fetch(`http://localhost:3001/api/recharges/${id}/approve`, {
+      const res  = await fetch(`${API_BASE}/api/recharges/${id}/approve`, {
         method:  'PATCH',
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -247,7 +248,7 @@ function RequestsView() {
   async function deny(id) {
     const token = localStorage.getItem('bazar_token')
     try {
-      await fetch(`http://localhost:3001/api/recharges/${id}/deny`, {
+      await fetch(`${API_BASE}/api/recharges/${id}/deny`, {
         method:  'PATCH',
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -439,7 +440,7 @@ function RechargeView() {
     if (!/^#B[A-Z0-9]{8}$/i.test(code)) { setSearchErr('Formato inválido: #B + 8 caracteres.'); return }
     setSearching(true)
     try {
-      const res  = await fetch(`http://localhost:3001/api/admin/user-by-code/${encodeURIComponent(code)}`, { headers: { Authorization: `Bearer ${token}` } })
+      const res  = await fetch(`${API_BASE}/api/admin/user-by-code/${encodeURIComponent(code)}`, { headers: { Authorization: `Bearer ${token}` } })
       const data = await res.json()
       if (!res.ok) { setSearchErr(data.error || 'No encontrado.'); return }
       setFoundUser(data.user)
@@ -453,7 +454,7 @@ function RechargeView() {
     if (!amount || Number(amount) <= 0) { setErr('Ingresa un monto válido.'); return }
     setLoading(true)
     try {
-      const res  = await fetch('http://localhost:3001/api/admin/recharge', {
+      const res  = await fetch(`${API_BASE}/api/admin/recharge`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ code: foundUser.code, type, amount: Number(amount), note }),
       })
@@ -686,7 +687,7 @@ function DeductView() {
     async function load() {
       setLoading(true)
       try {
-        const res  = await fetch('http://localhost:3001/api/admin/users', {
+        const res  = await fetch(`${API_BASE}/api/admin/users`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         const data = await res.json()
@@ -701,7 +702,7 @@ function DeductView() {
   async function doDeduct(type) {
     setErr(''); setSuccess('')
     try {
-      const res  = await fetch('http://localhost:3001/api/admin/deduct', {
+      const res  = await fetch(`${API_BASE}/api/admin/deduct`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body:    JSON.stringify({ code: selected.code, type }),
@@ -893,7 +894,7 @@ function WithdrawalRequestsView() {
       const token = localStorage.getItem('bazar_token')
       if (!token) return
       try {
-        const res  = await fetch('http://localhost:3001/api/withdrawals', {
+        const res  = await fetch(`${API_BASE}/api/withdrawals`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (!res.ok) {
@@ -930,7 +931,7 @@ function WithdrawalRequestsView() {
     setLoading(true)
     const token = localStorage.getItem('bazar_token')
     try {
-      const res  = await fetch(`http://localhost:3001/api/withdrawals/${id}/approve`, {
+      const res  = await fetch(`${API_BASE}/api/withdrawals/${id}/approve`, {
         method:  'PATCH',
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -946,7 +947,7 @@ function WithdrawalRequestsView() {
   async function deny(id) {
     const token = localStorage.getItem('bazar_token')
     try {
-      await fetch(`http://localhost:3001/api/withdrawals/${id}/deny`, {
+      await fetch(`${API_BASE}/api/withdrawals/${id}/deny`, {
         method:  'PATCH',
         headers: { Authorization: `Bearer ${token}` },
       })

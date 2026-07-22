@@ -1,3 +1,4 @@
+import API_BASE from '../../../config/api'
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useUser } from '../../../context/UserContext'
@@ -36,7 +37,7 @@ export default function AuthPage() {
     let cancelled = false
     async function checkServer() {
       try {
-        const res = await fetch('http://localhost:3001/api/health', { signal: AbortSignal.timeout(5000) })
+        const res = await fetch(`${API_BASE}/api/health`, { signal: AbortSignal.timeout(5000) })
         if (!cancelled) setServerDown(!res.ok)
       } catch {
         if (!cancelled) setServerDown(true)
@@ -247,7 +248,7 @@ function LoginForm({ showPass, setShowPass, onForgot, onSuccess, onNeedsVerify }
     setError('')
     setLoading(true)
     try {
-      const res  = await fetch('http://localhost:3001/api/auth/login', {
+      const res  = await fetch(`${API_BASE}/api/auth/login`, {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ email, password }),
       })
@@ -307,7 +308,7 @@ function RegisterForm({ showPass, setShowPass, onDone }) {
     if (!username || username.length < 3) { setUserOk(null); return } // eslint-disable-line react-hooks/set-state-in-effect
     const t = setTimeout(async () => {
       try {
-        const res = await fetch(`http://localhost:3001/api/auth/check-username?username=${encodeURIComponent(username)}`)
+        const res = await fetch(`${API_BASE}/api/auth/check-username?username=${encodeURIComponent(username)}`)
         const d   = await res.json()
         setUserOk(!d.taken)
       } catch { setUserOk(null) }
@@ -323,7 +324,7 @@ function RegisterForm({ showPass, setShowPass, onDone }) {
     if (password.length < 6)  { setError('Mínimo 6 caracteres.'); return }
     setLoading(true)
     try {
-      const res  = await fetch('http://localhost:3001/api/auth/register', {
+      const res  = await fetch(`${API_BASE}/api/auth/register`, {
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({ username, email, password }),
       })
@@ -434,7 +435,7 @@ function VerifyForm({ pending, onSuccess }) {
 
     setLoading(true)
     try {
-      const res  = await fetch('http://localhost:3001/api/auth/verify-email', {
+      const res  = await fetch(`${API_BASE}/api/auth/verify-email`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ userId: pending.userId, code }),
@@ -452,7 +453,7 @@ function VerifyForm({ pending, onSuccess }) {
   async function resendCode() {
     setResent(false)
     try {
-      await fetch('http://localhost:3001/api/auth/resend-code', {
+      await fetch(`${API_BASE}/api/auth/resend-code`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: pending.userId }),
       })

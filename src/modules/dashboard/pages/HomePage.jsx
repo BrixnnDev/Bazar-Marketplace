@@ -1,3 +1,4 @@
+import API_BASE from '../../../config/api'
 import { useEffect, useState } from 'react'
 import { fetchProductsFromAPI } from '../../../utils/productStorage'
 import {
@@ -45,7 +46,7 @@ export default function HomePage() {
     if (!token) return
     async function loadStats() {
       try {
-        const res = await fetch('http://localhost:3001/api/purchases/stats', {
+        const res = await fetch(`${API_BASE}/api/purchases/stats`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (res.ok) { const d = await res.json(); setStats(d) }
@@ -54,7 +55,7 @@ export default function HomePage() {
     }
     async function loadActivity() {
       try {
-        const res = await fetch('http://localhost:3001/api/purchases/activity', {
+        const res = await fetch(`${API_BASE}/api/purchases/activity`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (res.ok) { const d = await res.json(); setLiveActivity(d.activity || []) }
@@ -451,7 +452,7 @@ function BuyModal({ product, onClose, onPurchaseSuccess, updateUser }) {
     setStep('processing')
     try {
       const token = localStorage.getItem('bazar_token')
-      const res   = await fetch('http://localhost:3001/api/purchases', {
+      const res   = await fetch(`${API_BASE}/api/purchases`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body:    JSON.stringify({ productId: product.id }),

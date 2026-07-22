@@ -1,3 +1,4 @@
+import API_BASE from '../../../config/api'
 import { useEffect, useState } from 'react'
 import { MdToggleOn, MdToggleOff } from 'react-icons/md'
 
@@ -9,7 +10,7 @@ export default function TabMaintenance() {
 
   useEffect(() => {
     let mounted = true
-    fetch('http://localhost:3001/api/maintenance/public')
+    fetch(`${API_BASE}/api/maintenance/public`)
       .then(r => r.json())
       .then(d => {
         if (!mounted) return
@@ -30,7 +31,7 @@ export default function TabMaintenance() {
     setError('')
     try {
       const nextEnabled = !enabled
-      const res = await fetch('http://localhost:3001/api/admin/maintenance', {
+      const res = await fetch(`${API_BASE}/api/admin/maintenance`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

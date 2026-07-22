@@ -1,3 +1,4 @@
+import API_BASE from '../../../config/api'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -53,7 +54,7 @@ function WithdrawView() {
   async function loadHistory() {
     if (!token) return
     try {
-      const res  = await fetch('http://localhost:3001/api/withdrawals/my', {
+      const res  = await fetch(`${API_BASE}/api/withdrawals/my`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       if (!res.ok) return
@@ -73,7 +74,7 @@ function WithdrawView() {
 
     setLoading(true)
     try {
-      const res = await fetch('http://localhost:3001/api/withdrawals', {
+      const res = await fetch(`${API_BASE}/api/withdrawals`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
