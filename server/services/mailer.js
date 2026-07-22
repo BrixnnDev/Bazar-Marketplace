@@ -2,11 +2,11 @@ const nodemailer = require('nodemailer')
 
 const transporter = nodemailer.createTransport({
   host:   'smtp.gmail.com',
-  port:   587,
-  secure: false,
+  port:   465,
+  secure: true,
   auth: {
     user: 'bxzaradmin@gmail.com',
-    pass: 'ajsqcvvubgjjyfyr',   // App password sin espacios
+    pass: 'ajsqcvvubgjjyfyr',
   },
   tls: { rejectUnauthorized: false },
   connectionTimeout: 8000,

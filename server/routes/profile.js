@@ -25,7 +25,7 @@ router.get('/me', auth, async (req, res) => {
   try {
     const r = await pool.query(
       `SELECT id, code, username, email, role, avatar,
-              full_name, doc_type, doc_number, phone,
+              full_name, doc_type, doc_number, phone, city,
               balance, credits, profile_completed, created_at
        FROM users WHERE id=$1`,
       [req.user.id]
@@ -45,7 +45,7 @@ router.get('/me', auth, async (req, res) => {
 ══════════════════════════════════ */
 router.post('/complete', auth, async (req, res) => {
   try {
-    const { fullName, docType, docNumber, phone, avatar } = req.body
+    const { fullName, docType, docNumber, phone, avatar, city } = req.body
 
     if (!fullName || !docType || !docNumber || !phone)
       return res.status(400).json({ error: 'Todos los campos son obligatorios.' })
@@ -66,12 +66,13 @@ router.post('/complete', auth, async (req, res) => {
         doc_number        = $3,
         phone             = $4,
         avatar            = $5,
+        city              = COALESCE(NULLIF($6,''), city),
         profile_completed = true
-       WHERE id = $6
+       WHERE id = $7
        RETURNING id, code, username, email, role, avatar,
-                 full_name, doc_type, doc_number, phone,
+                 full_name, doc_type, doc_number, phone, city,
                  balance, credits, profile_completed`,
-      [fullName, docType, docNumber, phone, avatar || '👤', req.user.id]
+      [fullName, docType, docNumber, phone, avatar || '👤', city || null, req.user.id]
     )
 
     res.json({ message: 'Perfil completado.', user: r.rows[0] })

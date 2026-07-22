@@ -225,8 +225,6 @@ function serializePurchase(r) {
   }
 }
 
-module.exports = router
-
 /* ══════════════════════════════════════
    PATCH /api/purchases/:id/sell
    Marca una compra como 'en_venta' — el usuario la publicó en el marketplace
@@ -334,3 +332,5 @@ router.delete('/:id', auth, async (req, res) => {
     client.release()
   }
 })
+
+module.exports = router

@@ -208,18 +208,36 @@ async function setupDatabase() {
 
   console.log('✅ Database tables ready')
 
+  // Drop and recreate tables that had wrong schema (safe because they're empty)
+  try {
+    await pool.query(`DROP TABLE IF EXISTS products CASCADE;`)
+    await pool.query(`
+      CREATE TABLE products (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(200) NOT NULL,
+        category VARCHAR(50) NOT NULL DEFAULT 'otro',
+        category_label VARCHAR(80) NOT NULL DEFAULT 'Otro',
+        price NUMERIC(16,2) NOT NULL DEFAULT 0,
+        stock INTEGER NOT NULL DEFAULT 0,
+        visible BOOLEAN NOT NULL DEFAULT TRUE,
+        emoji VARCHAR(10) NOT NULL DEFAULT '📦',
+        description TEXT NOT NULL DEFAULT '',
+        seller VARCHAR(100) NOT NULL DEFAULT 'Administrador',
+        seller_id VARCHAR(50) NOT NULL DEFAULT 'admin',
+        rating NUMERIC(3,1) NOT NULL DEFAULT 4.8,
+        sales INTEGER NOT NULL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT NOW(),
+        updated_at TIMESTAMP DEFAULT NOW()
+      );
+    `)
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_products_seller ON products(seller_id);`)
+    console.log('✅ Products table recreated')
+  } catch (err) {
+    console.error('Products recreate error:', err.message)
+  }
+
   // Fix tables that already exist with wrong schema (ALTER TABLE for missing columns)
   const alters = [
-    // products: add missing columns
-    `ALTER TABLE products ADD COLUMN IF NOT EXISTS category_label VARCHAR(80) NOT NULL DEFAULT 'Otro';`,
-    `ALTER TABLE products ADD COLUMN IF NOT EXISTS visible BOOLEAN NOT NULL DEFAULT TRUE;`,
-    `ALTER TABLE products ADD COLUMN IF NOT EXISTS emoji VARCHAR(10) NOT NULL DEFAULT '📦';`,
-    `ALTER TABLE products ADD COLUMN IF NOT EXISTS seller VARCHAR(100) NOT NULL DEFAULT 'Administrador';`,
-    `ALTER TABLE products ADD COLUMN IF NOT EXISTS seller_id VARCHAR(50) NOT NULL DEFAULT 'admin';`,
-    `ALTER TABLE products ADD COLUMN IF NOT EXISTS rating NUMERIC(3,1) NOT NULL DEFAULT 4.8;`,
-    `ALTER TABLE products ADD COLUMN IF NOT EXISTS sales INTEGER NOT NULL DEFAULT 0;`,
-    // products: rename is_visible to visible if exists
-    `DO $$ BEGIN ALTER TABLE products RENAME COLUMN is_visible TO visible; EXCEPTION WHEN undefined_column THEN NULL; END $$;`,
 
     // purchases: add missing columns
     `ALTER TABLE purchases ADD COLUMN IF NOT EXISTS buyer_code VARCHAR(20) NOT NULL DEFAULT '';`,
