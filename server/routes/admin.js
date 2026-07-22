@@ -230,5 +230,3 @@ router.post('/reset-database', auth, adminOnly, async (req, res) => {
 })
 
 module.exports = router
- 
- 
