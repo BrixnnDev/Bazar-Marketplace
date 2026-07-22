@@ -1,8 +1,3 @@
-/**
- * Auto-setup: crea todas las tablas si no existen
- * Se ejecuta automáticamente al iniciar el servidor
- */
-
 const pool = require('../config/db')
 const bcrypt = require('bcryptjs')
 
@@ -39,50 +34,104 @@ async function setupDatabase() {
       used BOOLEAN DEFAULT FALSE, created_at TIMESTAMP DEFAULT NOW()
     );`,
 
-    // products
+    // products (matching add-products-table.js)
     `CREATE TABLE IF NOT EXISTS products (
-      id SERIAL PRIMARY KEY, seller_id INT REFERENCES users(id) ON DELETE CASCADE,
-      name VARCHAR(100) NOT NULL, description TEXT, price NUMERIC(16,2) NOT NULL,
-      image_url TEXT, category VARCHAR(50), is_visible BOOLEAN DEFAULT TRUE,
-      stock INT DEFAULT 1, created_at TIMESTAMP DEFAULT NOW(), updated_at TIMESTAMP DEFAULT NOW()
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(200) NOT NULL,
+      category VARCHAR(50) NOT NULL DEFAULT 'otro',
+      category_label VARCHAR(80) NOT NULL DEFAULT 'Otro',
+      price NUMERIC(16,2) NOT NULL DEFAULT 0,
+      stock INTEGER NOT NULL DEFAULT 0,
+      visible BOOLEAN NOT NULL DEFAULT TRUE,
+      emoji VARCHAR(10) NOT NULL DEFAULT '📦',
+      description TEXT NOT NULL DEFAULT '',
+      seller VARCHAR(100) NOT NULL DEFAULT 'Administrador',
+      seller_id VARCHAR(50) NOT NULL DEFAULT 'admin',
+      rating NUMERIC(3,1) NOT NULL DEFAULT 4.8,
+      sales INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
     );`,
 
-    // purchases
+    // purchases (matching add-purchases-table.js)
     `CREATE TABLE IF NOT EXISTS purchases (
-      id SERIAL PRIMARY KEY, buyer_id INT REFERENCES users(id),
-      seller_id INT REFERENCES users(id), product_id INT REFERENCES products(id),
-      amount NUMERIC(16,2) NOT NULL, status VARCHAR(20) DEFAULT 'completed',
+      id SERIAL PRIMARY KEY,
+      buyer_id INT REFERENCES users(id) ON DELETE SET NULL,
+      buyer_code VARCHAR(20) NOT NULL,
+      product_id INT,
+      product_name VARCHAR(200) NOT NULL,
+      product_emoji VARCHAR(10) DEFAULT '📦',
+      category VARCHAR(50) DEFAULT 'otro',
+      category_label VARCHAR(80) DEFAULT 'Otro',
+      price NUMERIC(16,2) NOT NULL,
+      seller VARCHAR(100) NOT NULL DEFAULT 'Administrador',
+      seller_id VARCHAR(50) NOT NULL DEFAULT 'admin',
+      status VARCHAR(20) NOT NULL DEFAULT 'disponible',
+      for_sale BOOLEAN DEFAULT FALSE,
+      sale_price NUMERIC(16,2),
+      description TEXT DEFAULT '',
       created_at TIMESTAMP DEFAULT NOW()
     );`,
 
-    // recharges
-    `CREATE TABLE IF NOT EXISTS recharges (
-      id SERIAL PRIMARY KEY, user_id INT REFERENCES users(id), type VARCHAR(20) DEFAULT 'balance',
-      amount NUMERIC(16,2) NOT NULL, method VARCHAR(50), reference VARCHAR(100),
-      note TEXT, status VARCHAR(20) DEFAULT 'approved', admin_id INT REFERENCES users(id),
-      created_at TIMESTAMP DEFAULT NOW()
+    // recharge_requests (matching add-recharges-table.js)
+    `CREATE TABLE IF NOT EXISTS recharge_requests (
+      id VARCHAR(40) PRIMARY KEY,
+      user_id INT REFERENCES users(id) ON DELETE CASCADE,
+      user_code VARCHAR(20) NOT NULL,
+      username VARCHAR(100) NOT NULL,
+      user_avatar VARCHAR(10) DEFAULT '👤',
+      account_name VARCHAR(100) NOT NULL,
+      account_number VARCHAR(80) NOT NULL,
+      amount NUMERIC(16,2) NOT NULL,
+      type VARCHAR(20) NOT NULL DEFAULT 'balance',
+      method VARCHAR(30) NOT NULL DEFAULT 'nequi',
+      img_preview TEXT,
+      status VARCHAR(20) NOT NULL DEFAULT 'pending',
+      created_at TIMESTAMP DEFAULT NOW(),
+      processed_at TIMESTAMP
     );`,
 
-    // notifications
+    // notifications (matching add-notifications-table.js)
     `CREATE TABLE IF NOT EXISTS notifications (
-      id SERIAL PRIMARY KEY, user_id INT REFERENCES users(id) ON DELETE CASCADE,
-      type VARCHAR(30) DEFAULT 'sistema', title VARCHAR(100) NOT NULL,
-      body TEXT, details TEXT, is_read BOOLEAN DEFAULT FALSE, created_at TIMESTAMP DEFAULT NOW()
+      id SERIAL PRIMARY KEY,
+      user_id INT REFERENCES users(id) ON DELETE CASCADE,
+      type VARCHAR(30) NOT NULL DEFAULT 'sistema',
+      title VARCHAR(200) NOT NULL,
+      body TEXT NOT NULL DEFAULT '',
+      details TEXT DEFAULT '',
+      read BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT NOW()
     );`,
 
-    // support_messages
+    // support_messages (matching add-support-table.js)
     `CREATE TABLE IF NOT EXISTS support_messages (
-      id SERIAL PRIMARY KEY, session_id VARCHAR(50) NOT NULL, user_id INT REFERENCES users(id),
-      user_code VARCHAR(12), username VARCHAR(50), user_avatar VARCHAR(10),
-      from_role VARCHAR(10) NOT NULL, text TEXT NOT NULL, created_at TIMESTAMP DEFAULT NOW()
+      id SERIAL PRIMARY KEY,
+      session_id VARCHAR(60) NOT NULL,
+      user_id INT REFERENCES users(id) ON DELETE CASCADE,
+      user_code VARCHAR(20) NOT NULL,
+      username VARCHAR(100) NOT NULL,
+      user_avatar VARCHAR(10) DEFAULT '👤',
+      from_role VARCHAR(10) NOT NULL DEFAULT 'user',
+      text TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT NOW()
     );`,
 
-    // withdrawal_requests
+    // withdrawal_requests (matching add-withdrawal-requests.js)
     `CREATE TABLE IF NOT EXISTS withdrawal_requests (
-      id SERIAL PRIMARY KEY, user_id INT REFERENCES users(id), bank_id VARCHAR(50),
-      bank_label VARCHAR(100), account_number VARCHAR(30), owner_name VARCHAR(100),
-      nit VARCHAR(30), amount NUMERIC(16,2) NOT NULL, status VARCHAR(20) DEFAULT 'pending',
-      admin_note TEXT, created_at TIMESTAMP DEFAULT NOW(), reviewed_at TIMESTAMP
+      id VARCHAR(50) PRIMARY KEY,
+      user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      user_code VARCHAR(12),
+      username VARCHAR(50),
+      user_avatar VARCHAR(10) DEFAULT '👤',
+      bank_id VARCHAR(30) NOT NULL,
+      bank_label VARCHAR(50),
+      account_number VARCHAR(30) NOT NULL,
+      owner_name VARCHAR(100),
+      nit VARCHAR(30),
+      amount NUMERIC(16,2) NOT NULL,
+      status VARCHAR(20) DEFAULT 'pending',
+      processed_at TIMESTAMP,
+      created_at TIMESTAMP DEFAULT NOW()
     );`,
 
     // maintenance_settings
@@ -111,23 +160,31 @@ async function setupDatabase() {
     `CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);`,
     `CREATE INDEX IF NOT EXISTS idx_users_code     ON users(code);`,
     `CREATE INDEX IF NOT EXISTS idx_ev_user        ON email_verifications(user_id);`,
-    `CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);`,
-    `CREATE INDEX IF NOT EXISTS idx_support_session ON support_messages(session_id);`,
+    `CREATE INDEX IF NOT EXISTS idx_notif_user     ON notifications(user_id);`,
+    `CREATE INDEX IF NOT EXISTS idx_sm_session     ON support_messages(session_id);`,
+    `CREATE INDEX IF NOT EXISTS idx_sm_user        ON support_messages(user_id);`,
+    `CREATE INDEX IF NOT EXISTS idx_purchases_buyer ON purchases(buyer_code);`,
+    `CREATE INDEX IF NOT EXISTS idx_rr_user_code   ON recharge_requests(user_code);`,
+    `CREATE INDEX IF NOT EXISTS idx_rr_status      ON recharge_requests(status);`,
+    `CREATE INDEX IF NOT EXISTS idx_wr_user_id     ON withdrawal_requests(user_id);`,
+    `CREATE INDEX IF NOT EXISTS idx_wr_status      ON withdrawal_requests(status);`,
 
-    // Trigger function
+    // Triggers
     `CREATE OR REPLACE FUNCTION set_updated_at()
      RETURNS TRIGGER AS $$ BEGIN NEW.updated_at = NOW(); RETURN NEW; END; $$ LANGUAGE plpgsql;`,
     `DO $$ BEGIN
       CREATE TRIGGER trg_users_updated BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION set_updated_at();
     EXCEPTION WHEN duplicate_object THEN NULL; END $$;`,
+    `CREATE OR REPLACE FUNCTION set_products_updated_at()
+     RETURNS TRIGGER AS $$ BEGIN NEW.updated_at = NOW(); RETURN NEW; END; $$ LANGUAGE plpgsql;`,
     `DO $$ BEGIN
-      CREATE TRIGGER trg_products_updated BEFORE UPDATE ON products FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+      CREATE TRIGGER trg_products_updated BEFORE UPDATE ON products FOR EACH ROW EXECUTE FUNCTION set_products_updated_at();
     EXCEPTION WHEN duplicate_object THEN NULL; END $$;`,
   ]
 
   for (const sql of queries) {
     try { await pool.query(sql) } catch (err) {
-      if (err.code !== '42710' && !err.message.includes('already exists') && !err.message.includes('duplicate_object')) {
+      if (!['42710', '42P07', '42P16'].includes(err.code) && !err.message.includes('already exists') && !err.message.includes('duplicate') && !err.message.includes('does not exist')) {
         console.error('Setup error:', err.message)
       }
     }
