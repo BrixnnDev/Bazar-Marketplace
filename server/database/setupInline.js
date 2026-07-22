@@ -233,6 +233,8 @@ async function setupDatabase() {
     `ALTER TABLE purchases ADD COLUMN IF NOT EXISTS for_sale BOOLEAN DEFAULT FALSE;`,
     `ALTER TABLE purchases ADD COLUMN IF NOT EXISTS sale_price NUMERIC(16,2);`,
     `ALTER TABLE purchases ADD COLUMN IF NOT EXISTS description TEXT DEFAULT '';`,
+    // Fix product_id type mismatch (was created as VARCHAR in old migrations)
+    `DO $$ BEGIN ALTER TABLE purchases ALTER COLUMN product_id TYPE INT USING product_id::int; EXCEPTION WHEN undefined_column THEN NULL; EXCEPTION WHEN invalid_text_representation THEN NULL; END $$;`,
 
     // notifications: rename is_read to read if exists
     `DO $$ BEGIN ALTER TABLE notifications RENAME COLUMN is_read TO read; EXCEPTION WHEN undefined_column THEN NULL; END $$;`,

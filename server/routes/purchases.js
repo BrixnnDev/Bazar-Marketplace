@@ -186,7 +186,7 @@ router.get('/stats', auth, async (req, res) => {
     const profitR = await pool.query(
       `SELECT COALESCE(SUM(p.price - pu.price), 0) AS ganancia_reventa
        FROM products p
-       JOIN purchases pu ON pu.product_id = p.id
+       JOIN purchases pu ON pu.product_id::int = p.id
        WHERE p.seller_id = (SELECT code FROM users WHERE id=$1)
          AND pu.buyer_id != $1`,
       [req.user.id]
