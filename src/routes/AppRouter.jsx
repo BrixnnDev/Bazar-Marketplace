@@ -1,6 +1,6 @@
 import API_BASE from '../config/api'
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import LandingPage          from '../modules/landing/pages/LandingPage'
 import AuthPage             from '../modules/auth/pages/AuthPage'
 import CompleteProfilePage  from '../modules/profile/pages/CompleteProfilePage'
@@ -20,6 +20,18 @@ import DashboardLayout      from '../components/layout/DashboardLayout'
 import NotFoundPage         from '../modules/errors/NotFoundPage'
 import MaintenancePage      from '../modules/errors/MaintenancePage'
 import { useUser }          from '../context/UserContext'
+
+/* ── Ocultar ruta antes del paint ── */
+function CleanUrl() {
+  const loc = useLocation()
+  useLayoutEffect(() => {
+    if (loc.pathname !== '/') {
+      sessionStorage.setItem('bazar_last_path', loc.pathname)
+      window.history.replaceState(null, '', '/')
+    }
+  }, [loc.pathname])
+  return null
+}
 
 /* ── Helpers ── */
 function getToken() { return localStorage.getItem('bazar_token') }
@@ -252,6 +264,7 @@ export default function AppRouter() {
   return (
 
     <>
+      <CleanUrl />
       <SessionVerifier />
       <Routes>
         {/* ── Públicas ── */}
