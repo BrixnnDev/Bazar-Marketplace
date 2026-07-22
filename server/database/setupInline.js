@@ -261,30 +261,9 @@ async function setupDatabase() {
       )
     }
 
-    // Restore non-admin, non-test users (like Brixnn)
-    const testEmails = ['test@test.com', 'test99@test.com', 'testxyz@test.com']
-    for (const u of savedUsers) {
-      if (u.email === ADMIN_EMAIL) continue
-      if (testEmails.includes(u.email)) continue
-      try {
-        await pool.query(
-          `INSERT INTO users (code, username, email, password_hash, role, avatar, is_verified, is_active, profile_completed, balance, credits, full_name, phone, city, created_at)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
-           ON CONFLICT (email) DO NOTHING`,
-          [u.code, u.username, u.email, u.password_hash, u.role || 'usuario', u.avatar || '👤',
-           true, u.is_active !== false, true,
-           u.balance || 0, u.credits || 0,
-           u.full_name || null, u.phone || null, u.city || null, u.created_at]
-        )
-        console.log(`✅ Restored user: ${u.username} (${u.email})`)
-      } catch (err) {
-        console.error(`Failed to restore user ${u.username}:`, err.message)
-      }
-    }
-
-    // Delete test users
-    await pool.query(`DELETE FROM users WHERE email = ANY($1)`, [testEmails])
-    await pool.query(`DELETE FROM users WHERE username LIKE 'test%' AND email != $1`, [ADMIN_EMAIL])
+    // Delete ALL non-admin users
+    await pool.query(`DELETE FROM users WHERE email != $1`, [ADMIN_EMAIL])
+    console.log('🧹 All non-admin users deleted')
 
   } catch (err) {
     console.error('User restore error:', err.message)
