@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { MemoryRouter } from 'react-router-dom'
+import { BrowserRouter } from 'react-router-dom'
 import { PaymentMethodsProvider } from './context/PaymentMethodsContext'
 import { ActivityProvider }       from './context/ActivityContext'
 import { SupportProvider }        from './context/SupportContext'
@@ -11,12 +11,9 @@ import { applyAccentColor, getStoredAccent } from './utils/themeStorage'
 
 applyAccentColor(getStoredAccent())
 
-/* ── Ruta inicial desde sessionStorage (sobrevive refresh) ── */
-const savedPath = sessionStorage.getItem('bazar_last_path') || '/'
-
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <MemoryRouter initialEntries={[savedPath]}>
+    <BrowserRouter>
       <UserProvider>
         <PaymentMethodsProvider>
           <ActivityProvider>
@@ -26,6 +23,6 @@ createRoot(document.getElementById('root')).render(
           </ActivityProvider>
         </PaymentMethodsProvider>
       </UserProvider>
-    </MemoryRouter>
+    </BrowserRouter>
   </StrictMode>,
 )
