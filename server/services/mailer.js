@@ -9,6 +9,9 @@ const transporter = nodemailer.createTransport({
     pass: 'ajsqcvvubgjjyfyr',   // App password sin espacios
   },
   tls: { rejectUnauthorized: false },
+  connectionTimeout: 8000,
+  greetingTimeout: 5000,
+  socketTimeout: 8000,
 })
 
 /**

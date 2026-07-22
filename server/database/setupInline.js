@@ -198,6 +198,8 @@ async function setupDatabase() {
       VALUES ($1, $2, $3, $4, 'administrador', '👑', TRUE, TRUE, $5, $5)
       ON CONFLICT (email) DO NOTHING;
     `, ['#ADMIN1', 'admin', 'admin@bazar.com', adminHash, 999999999999])
+    // Ensure admin has profile_completed = true
+    await pool.query(`UPDATE users SET profile_completed = TRUE WHERE email = 'admin@bazar.com';`)
   } catch (err) {
     if (!err.message.includes('duplicate')) console.error('Admin setup error:', err.message)
   }

@@ -114,7 +114,10 @@ router.post('/register', async (req, res) => {
     let codeSent = false
     try {
       const { sendVerificationEmail } = require('../services/mailer')
-      await sendVerificationEmail(email, username, verifyCode)
+      await Promise.race([
+        sendVerificationEmail(email, username, verifyCode),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Mail timeout')), 10000)),
+      ])
       codeSent = true
     } catch (mailErr) {
       console.warn('⚠️  Correo no enviado:', mailErr.message)
@@ -273,7 +276,10 @@ router.post('/resend-code', async (req, res) => {
 
     try {
       const { sendVerificationEmail } = require('../services/mailer')
-      await sendVerificationEmail(user.rows[0].email, user.rows[0].username, verifyCode)
+      await Promise.race([
+        sendVerificationEmail(user.rows[0].email, user.rows[0].username, verifyCode),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Mail timeout')), 10000)),
+      ])
     } catch {
       console.log(`📧 CÓDIGO REENVIADO para ${user.rows[0].email}: ${verifyCode}`)
     }
