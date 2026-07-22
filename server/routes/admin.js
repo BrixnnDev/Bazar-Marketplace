@@ -185,4 +185,18 @@ router.post('/deduct', auth, adminOnly, async (req, res) => {
   }
 })
 
+/* ── PATCH /api/admin/users/:id/verify — verificar un usuario ── */
+router.patch('/users/:id/verify', auth, adminOnly, async (req, res) => {
+  try {
+    const r = await pool.query(
+      `UPDATE users SET is_verified=TRUE WHERE id=$1 RETURNING id, code, username, email, is_verified`,
+      [req.params.id]
+    )
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Usuario no encontrado.' })
+    res.json({ message: 'Usuario verificado.', user: r.rows[0] })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 module.exports = router

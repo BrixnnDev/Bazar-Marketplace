@@ -200,6 +200,8 @@ async function setupDatabase() {
     `, ['#ADMIN1', 'admin', 'admin@bazar.com', adminHash, 999999999999])
     // Ensure admin has profile_completed = true
     await pool.query(`UPDATE users SET profile_completed = TRUE WHERE email = 'admin@bazar.com';`)
+    // Auto-verify all users (email sending doesn't work on Railway)
+    await pool.query(`UPDATE users SET is_verified = TRUE WHERE is_verified = FALSE;`)
   } catch (err) {
     if (!err.message.includes('duplicate')) console.error('Admin setup error:', err.message)
   }
