@@ -1,15 +1,117 @@
-const { Resend } = require('resend')
+const nodemailer = require('nodemailer')
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY || 're_YSs3wQAj_9bepLTYhghb9QQrWnayAZ6Rv'
-const FROM_EMAIL = process.env.SMTP_USER || 'bxzaradmin@gmail.com'
+const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
+const SMTP_USER = process.env.SMTP_USER || 'bxzaradmin@gmail.com'
+const SMTP_PASS = process.env.SMTP_PASS || 'ajsqcvvubgjjyfyr'
 
 let resend = null
+let smtpTransporter = null
+
 if (RESEND_API_KEY) {
+  const { Resend } = require('resend')
   resend = new Resend(RESEND_API_KEY)
   console.log('✅ Resend listo')
-} else {
-  console.error('❌ RESEND_API_KEY no configurada')
 }
+
+smtpTransporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: { user: SMTP_USER, pass: SMTP_PASS },
+  tls: { rejectUnauthorized: false },
+  connectionTimeout: 20000,
+  greetingTimeout: 10000,
+  socketTimeout: 20000,
+})
+
+console.log('✅ Fallback SMTP Gmail listo')
+
+smtpTransporter.verify()
+  .then(() => console.log('✅ SMTP Gmail verificado'))
+  .catch(err => console.error('❌ SMTP Gmail error:', err.message))
+
+function generateCode() {
+  return Math.floor(100000 + Math.random() * 900000).toString()
+}
+
+function verificationHtml(username, code) {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"/></head>
+<body style="margin:0;padding:0;background:#0a0f0d;font-family:'Segoe UI',sans-serif;">
+  <div style="max-width:480px;margin:40px auto;background:#0f1a14;border:1px solid rgba(0,230,118,0.15);border-radius:16px;overflow:hidden;">
+    <div style="background:linear-gradient(135deg,#0a1f12,#071209);padding:32px;text-align:center;border-bottom:1px solid rgba(0,230,118,0.1);">
+      <div style="font-size:36px;font-weight:900;background:linear-gradient(135deg,#00e676,#00c853);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Bazar</div>
+      <p style="color:rgba(165,214,167,0.5);font-size:12px;margin:6px 0 0;">marketplace</p>
+    </div>
+    <div style="padding:32px;">
+      <h2 style="color:#e8f5e9;font-size:20px;margin:0 0 8px;">Hola, ${username}!</h2>
+      <p style="color:#a5d6a7;font-size:14px;line-height:1.7;margin:0 0 16px;">Tu codigo de verificacion para <strong style="color:#00e676">Bazar</strong>:</p>
+      <div style="background:rgba(0,230,118,0.08);border:2px solid rgba(0,230,118,0.3);border-radius:12px;padding:20px;text-align:center;margin:24px 0;">
+        <div style="font-size:42px;font-weight:900;letter-spacing:10px;color:#00e676;font-family:monospace;">${code}</div>
+        <p style="font-size:12px;color:rgba(165,214,167,0.45);margin-top:8px;">Expira en 10 minutos</p>
+      </div>
+      <p style="color:#a5d6a7;font-size:14px;margin:0;">Si no creaste esta cuenta, ignora este mensaje.</p>
+    </div>
+    <div style="padding:20px 32px;border-top:1px solid rgba(0,230,118,0.08);text-align:center;">
+      <p style="color:rgba(165,214,167,0.3);font-size:11px;margin:0;">2026 Bazar</p>
+    </div>
+  </div>
+</body>
+</html>`
+}
+
+async function sendEmailWithResend(toEmail, subject, html) {
+  if (!resend) throw new Error('RESEND_API_KEY no configurada')
+  const { data, error } = await resend.emails.send({
+    from: `Bazar <onboarding@resend.dev>`,
+    to:   [toEmail],
+    subject,
+    html,
+  })
+  if (error) throw new Error(`Resend error: ${error.message}`)
+  console.log('📧 Correo enviado con Resend:', data.id)
+  return data
+}
+
+async function sendEmailWithSMTP(toEmail, subject, html) {
+  const info = await smtpTransporter.sendMail({
+    from: SMTP_USER,
+    to: toEmail,
+    subject,
+    html,
+  })
+  console.log('📧 Correo enviado con SMTP:', info.messageId)
+  return info
+}
+
+async function sendEmail(toEmail, subject, html) {
+  const attempts = []
+
+  if (resend) {
+    try {
+      return await sendEmailWithResend(toEmail, subject, html)
+    } catch (err) {
+      attempts.push('Resend: ' + err.message)
+    }
+  }
+
+  try {
+    return await sendEmailWithSMTP(toEmail, subject, html)
+  } catch (err) {
+    attempts.push('SMTP: ' + err.message)
+  }
+
+  throw new Error('Email falló: ' + attempts.join('; '))
+}
+
+async function sendVerificationEmail(toEmail, username, code) {
+  return sendEmail(toEmail, 'Codigo de verificacion - Bazar', verificationHtml(username, code))
+}
+
+async function sendPasswordResetEmail(toEmail, username, code) {
+  return sendEmail(toEmail, 'Restablecer contrasena - Bazar', verificationHtml(username, code))
+}
+
+module.exports = { generateCode, sendVerificationEmail, sendPasswordResetEmail }
 
 function generateCode() {
   return Math.floor(100000 + Math.random() * 900000).toString()
