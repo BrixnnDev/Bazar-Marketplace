@@ -199,6 +199,22 @@ router.patch('/users/:id/verify', auth, adminOnly, async (req, res) => {
   }
 })
 
+/* ── DELETE /api/admin/users/:id ──
+   Eliminar un usuario (no admin) ── */
+router.delete('/users/:id', auth, adminOnly, async (req, res) => {
+  try {
+    const uid = Number(req.params.id)
+    const check = await pool.query('SELECT id, role, email FROM users WHERE id=$1', [uid])
+    if (check.rows.length === 0) return res.status(404).json({ error: 'Usuario no encontrado.' })
+    if (check.rows[0].role === 'administrador') return res.status(400).json({ error: 'No se puede eliminar un admin.' })
+
+    await pool.query('DELETE FROM users WHERE id=$1', [uid])
+    res.json({ message: 'Usuario eliminado.' })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 /* ── POST /api/admin/reset-database ──
    Elimina TODOS los usuarios, productos, compras, etc.
    Solo deja el admin. ⚠️ IRREVERSIBLE */
