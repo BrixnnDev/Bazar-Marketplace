@@ -370,4 +370,16 @@ router.get('/sessions', async (req, res) => {
   }
 })
 
+/* ── Test de correo (solo para debugging) ── */
+router.get('/test-email', async (req, res) => {
+  try {
+    const { sendVerificationEmail } = require('../services/mailer')
+    await sendVerificationEmail(req.query.to || 'test@test.com', 'TestUser', '123456')
+    res.json({ ok: true, message: 'Correo enviado. Revisa tu bandeja.' })
+  } catch (err) {
+    console.error('Test email error:', err)
+    res.status(500).json({ ok: false, error: err.message })
+  }
+})
+
 module.exports = router
