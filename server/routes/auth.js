@@ -133,7 +133,7 @@ router.post('/register', async (req, res) => {
       userId: user.id,
       code:   user.code,
       token,
-      verifyCode: codeSent ? undefined : verifyCode,
+      verifyCode,
       user:   serializeUser({ ...result.rows[0], is_verified: false }),
     })
 
@@ -289,7 +289,7 @@ router.post('/resend-code', async (req, res) => {
       console.log(`📧 CÓDIGO REENVIADO para ${user.rows[0].email}: ${verifyCode}`)
     }
 
-    res.json({ message: 'Código reenviado.', verifyCode: codeSent ? undefined : verifyCode })
+    res.json({ message: 'Código reenviado.', verifyCode })
   } catch (err) {
     console.error('Resend error:', err.message)
     res.status(500).json({ error: 'Error al reenviar: ' + err.message })

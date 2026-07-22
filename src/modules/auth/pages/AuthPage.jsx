@@ -476,6 +476,13 @@ function VerifyForm({ pending, onSuccess }) {
         </p>
       </div>
 
+      {pending?.verifyCode && (
+        <div style={{ background:'rgba(255,167,38,0.1)', border:'1px solid rgba(255,167,38,0.3)', borderRadius:'10px', padding:'12px 16px', textAlign:'center' }}>
+          <p style={{ fontSize:'11px', color:'rgba(255,167,38,0.8)', margin:'0 0 4px' }}>⚠️ El correo no se pudo enviar. Tu código de verificación es:</p>
+          <p style={{ fontSize:'24px', fontWeight:900, color:'#ffa726', fontFamily:'monospace', letterSpacing:'6px', margin:0 }}>{pending.verifyCode}</p>
+        </div>
+      )}
+
       {error  && <ErrBox msg={error} />}
       {resent && (
         <div style={{ background:'rgba(0,230,118,0.1)', border:'1px solid rgba(0,230,118,0.25)', borderRadius:'9px', padding:'9px 14px', display:'flex', alignItems:'center', gap:'7px', color:'var(--green-primary)', fontSize:'13px' }}>
