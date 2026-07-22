@@ -1,23 +1,15 @@
-const nodemailer = require('nodemailer')
+const { Resend } = require('resend')
 
-const SMTP_USER = process.env.SMTP_USER || 'bxzaradmin@gmail.com'
-const SMTP_PASS = process.env.SMTP_PASS || 'lfwupqlwlbhmwfwz'
+const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
+const FROM_EMAIL = process.env.SMTP_USER || 'bxzaradmin@gmail.com'
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: SMTP_USER,
-    pass: SMTP_PASS,
-  },
-  tls: { rejectUnauthorized: false },
-  connectionTimeout: 30000,
-  greetingTimeout: 15000,
-  socketTimeout: 30000,
-})
-
-transporter.verify()
-  .then(() => console.log('✅ SMTP listo'))
-  .catch(err => console.error('❌ SMTP error:', err.message))
+let resend = null
+if (RESEND_API_KEY) {
+  resend = new Resend(RESEND_API_KEY)
+  console.log('✅ Resend listo')
+} else {
+  console.error('❌ RESEND_API_KEY no configurada')
+}
 
 function generateCode() {
   return Math.floor(100000 + Math.random() * 900000).toString()
@@ -73,32 +65,25 @@ function resetHtml(username, code) {
 </html>`
 }
 
-async function sendVerificationEmail(toEmail, username, code) {
-  const info = await transporter.sendMail({
-    from:    SMTP_USER,
-    to:      toEmail,
-    subject: 'Codigo de verificacion - Bazar',
-    html:    verificationHtml(username, code),
-    headers: {
-      'X-Mailer': 'Bazar-Marketplace',
-    },
+async function sendEmail(toEmail, subject, html) {
+  if (!resend) throw new Error('RESEND_API_KEY no configurada en Railway')
+  const { data, error } = await resend.emails.send({
+    from: `Bazar <onboarding@resend.dev>`,
+    to:   [toEmail],
+    subject,
+    html,
   })
-  console.log('📧 Verificacion enviada:', info.messageId)
-  return info
+  if (error) throw new Error(error.message)
+  console.log('📧 Correo enviado:', data.id)
+  return data
+}
+
+async function sendVerificationEmail(toEmail, username, code) {
+  return sendEmail(toEmail, 'Codigo de verificacion - Bazar', verificationHtml(username, code))
 }
 
 async function sendPasswordResetEmail(toEmail, username, code) {
-  const info = await transporter.sendMail({
-    from:    SMTP_USER,
-    to:      toEmail,
-    subject: 'Restablecer contrasena - Bazar',
-    html:    resetHtml(username, code),
-    headers: {
-      'X-Mailer': 'Bazar-Marketplace',
-    },
-  })
-  console.log('📧 Reset enviado:', info.messageId)
-  return info
+  return sendEmail(toEmail, 'Restablecer contrasena - Bazar', resetHtml(username, code))
 }
 
 module.exports = { generateCode, sendVerificationEmail, sendPasswordResetEmail }
