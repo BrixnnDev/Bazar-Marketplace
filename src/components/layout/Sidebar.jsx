@@ -12,7 +12,8 @@ import { useUser } from '../../context/UserContext'
 
 
 const mainNav = [
-  { to: '/dashboard',               icon: MdStorefront,           label: 'Marketplace'    },
+  { to: '/dashboard',               icon: MdDashboard,            label: 'Inicio'         },
+  { to: '/dashboard/marketplace',   icon: MdStorefront,           label: 'Marketplace'    },
   { to: '/dashboard/sell',          icon: MdSell,                 label: 'Vender'         },
   { to: '/dashboard/withdrawals',   icon: MdAccountBalanceWallet, label: 'Retiros',       userOnly: true },
   { to: '/dashboard/recharge',      icon: MdAddCard,              label: 'Recargas',      userOnly: true },

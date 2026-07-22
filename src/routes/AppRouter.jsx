@@ -269,8 +269,8 @@ export default function AppRouter() {
         <Route path="/dashboard"
           element={<ProfileGuard><DashboardLayout /></ProfileGuard>}
         >
-          <Route index                  element={<MarketplacePage />} />
-          <Route path="marketplace"     element={<Navigate to="/dashboard" replace />} />
+          <Route index                  element={<HomePage />} />
+          <Route path="marketplace"     element={<MarketplacePage />} />
           <Route path="sell"            element={<SellPage />} />
           <Route path="withdrawals"     element={<WithdrawalsPage />} />
           <Route path="notifications"   element={<NotificationsPage />} />
