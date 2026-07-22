@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { HashRouter } from 'react-router-dom'
+import { BrowserRouter } from 'react-router-dom'
 import { PaymentMethodsProvider } from './context/PaymentMethodsContext'
 import { ActivityProvider }       from './context/ActivityContext'
 import { SupportProvider }        from './context/SupportContext'
@@ -13,7 +13,7 @@ applyAccentColor(getStoredAccent())
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <HashRouter>
+    <BrowserRouter>
       <UserProvider>
         <PaymentMethodsProvider>
           <ActivityProvider>
@@ -23,6 +23,6 @@ createRoot(document.getElementById('root')).render(
           </ActivityProvider>
         </PaymentMethodsProvider>
       </UserProvider>
-    </HashRouter>
+    </BrowserRouter>
   </StrictMode>,
 )

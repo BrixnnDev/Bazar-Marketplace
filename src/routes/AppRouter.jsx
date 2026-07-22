@@ -21,6 +21,19 @@ import NotFoundPage         from '../modules/errors/NotFoundPage'
 import MaintenancePage      from '../modules/errors/MaintenancePage'
 import { useUser }          from '../context/UserContext'
 
+/* ── Ocultar siempre la ruta de la URL — solo mostrar dominio ── */
+function CleanUrl() {
+  const location = useLocation()
+  useEffect(() => {
+    const path = location.pathname
+    if (path !== '/') {
+      sessionStorage.setItem('bazar_last_path', path)
+      window.history.replaceState(null, '', '/')
+    }
+  }, [location.pathname])
+  return null
+}
+
 /* ── Modo mantenimiento (persistente en backend) ── */
 
 
@@ -42,6 +55,13 @@ function SessionVerifier() {
 
   useEffect(() => {
     const token = getToken()
+
+    // Restaurar ruta guardada después de refresh
+    const savedPath = sessionStorage.getItem('bazar_last_path')
+    if (savedPath && location.pathname === '/') {
+      navigate(savedPath, { replace: true })
+      return
+    }
 
     // Si no hay token, no hacer nada (las rutas manejan la redirección)
     if (!token) { setChecked(true); return } // eslint-disable-line react-hooks/set-state-in-effect
@@ -248,6 +268,7 @@ export default function AppRouter() {
   return (
 
     <>
+      <CleanUrl />
       <SessionVerifier />
       <Routes>
         {/* ── Públicas ── */}
