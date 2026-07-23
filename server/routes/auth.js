@@ -372,16 +372,18 @@ router.get('/sessions', async (req, res) => {
 
 /* ── Test de correo (solo para debugging) ── */
 router.get('/test-email', async (req, res) => {
+  let dns = null
   try {
     const to = req.query.to
     if (!to) return res.status(400).json({ ok: false, error: 'Falta ?to=correo@gmail.com' })
 
+    dns = await require('dns').promises.resolve('api.brevo.com').catch(e => e.message)
+
     const { sendVerificationEmail } = require('../services/mailer')
     const data = await sendVerificationEmail(to, 'TestUser', '123456')
-    res.json({ ok: true, id: data.id, message: 'Correo enviado.' })
+    res.json({ ok: true, dns, id: data.messageId || data.id, message: 'Correo enviado.' })
   } catch (err) {
-    console.error('Test email error:', err)
-    res.status(500).json({ ok: false, error: err.message })
+    res.status(500).json({ ok: false, dns, error: err.message, code: err.code, status: err.response?.status })
   }
 })
 

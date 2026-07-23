@@ -10,7 +10,7 @@ const brevo = axios.create({
     'api-key': BREVO_API_KEY,
     'Content-Type': 'application/json',
   },
-  timeout: 15000,
+  timeout: 30000,
 })
 
 console.log('✅ Brevo API listo')
