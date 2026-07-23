@@ -1,29 +1,19 @@
-const nodemailer = require('nodemailer')
+const axios = require('axios')
 
-const SMTP_HOST = process.env.SMTP_HOST || 'smtp-relay.brevo.com'
-const SMTP_PORT = process.env.SMTP_PORT || 587
-const SMTP_USER = process.env.SMTP_USER || 'b31709001@smtp-brevo.com'
-const SMTP_PASS = process.env.SMTP_PASS || 'DFgtjMqJLG91IWCQ'
+const BREVO_API_KEY = process.env.BREVO_API_KEY || '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'
+const BREVO_SENDER_NAME = 'Bazar Marketplace'
+const BREVO_SENDER_EMAIL = process.env.SMTP_USER || 'bxzaradmin@gmail.com'
 
-const transporter = nodemailer.createTransport({
-  host: SMTP_HOST,
-  port: Number(SMTP_PORT),
-  secure: false,
-  auth: {
-    user: SMTP_USER,
-    pass: SMTP_PASS,
+const brevo = axios.create({
+  baseURL: 'https://api.brevo.com/v3',
+  headers: {
+    'api-key': BREVO_API_KEY,
+    'Content-Type': 'application/json',
   },
-  tls: { rejectUnauthorized: false },
-  connectionTimeout: 15000,
-  greetingTimeout: 10000,
-  socketTimeout: 15000,
+  timeout: 15000,
 })
 
-console.log('✅ SMTP Brevo configurado')
-
-transporter.verify()
-  .then(() => console.log('✅ SMTP Brevo verificado'))
-  .catch(err => console.error('❌ SMTP Brevo error:', err.message))
+console.log('✅ Brevo API listo')
 
 function generateCode() {
   return Math.floor(100000 + Math.random() * 900000).toString()
@@ -80,25 +70,25 @@ function resetHtml(username, code) {
 }
 
 async function sendVerificationEmail(toEmail, username, code) {
-  const info = await transporter.sendMail({
-    from:    '"Bazar Marketplace" <bazar@tudominio.com>',
-    to:      toEmail,
-    subject: 'Codigo de verificacion - Bazar',
-    html:    verificationHtml(username, code),
+  const { data } = await brevo.post('/smtp/email', {
+    sender:      { name: BREVO_SENDER_NAME, email: BREVO_SENDER_EMAIL },
+    to:          [{ email: toEmail, name: username }],
+    subject:     'Codigo de verificacion - Bazar',
+    htmlContent: verificationHtml(username, code),
   })
-  console.log('📧 Verificacion enviada:', info.messageId)
-  return info
+  console.log('📧 Verificacion enviada:', data.messageId)
+  return data
 }
 
 async function sendPasswordResetEmail(toEmail, username, code) {
-  const info = await transporter.sendMail({
-    from:    '"Bazar Marketplace" <bazar@tudominio.com>',
-    to:      toEmail,
-    subject: 'Restablecer contrasena - Bazar',
-    html:    resetHtml(username, code),
+  const { data } = await brevo.post('/smtp/email', {
+    sender:      { name: BREVO_SENDER_NAME, email: BREVO_SENDER_EMAIL },
+    to:          [{ email: toEmail, name: username }],
+    subject:     'Restablecer contrasena - Bazar',
+    htmlContent: resetHtml(username, code),
   })
-  console.log('📧 Reset enviado:', info.messageId)
-  return info
+  console.log('📧 Reset enviado:', data.messageId)
+  return data
 }
 
 module.exports = { generateCode, sendVerificationEmail, sendPasswordResetEmail }
